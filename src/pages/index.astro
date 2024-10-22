@@ -1,5 +1,34 @@
 ---
 import Layout from "@layouts/Layout.astro";
+
+const pages = [
+  {
+    name: "First Scene",
+    url: "/firstScene/",
+  },
+];
 ---
 
-<Layout title="Welcome to Astro."> home </Layout>
+<Layout title="R3F Sketches">
+  <ul>
+    {
+      pages.map((page, index) => (
+        <li>
+          <a href={page.url}>{page.name}</a>
+        </li>
+      ))
+    }
+  </ul>
+</Layout>
+
+<style>
+  ul {
+    padding: 64px;
+    color: #fff;
+    font-size: 16px;
+
+    a {
+      color: #fff;
+    }
+  }
+</style>
