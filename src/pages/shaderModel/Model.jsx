@@ -1,6 +1,6 @@
 import { shaderMaterial } from "@react-three/drei";
 import { useFrame, useLoader } from "@react-three/fiber";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { GLTFLoader } from "three/examples/jsm/Addons.js";
 import * as THREE from "three";
 import { useRef } from "react";
 
