@@ -26,6 +26,8 @@ const vertexShader = `
   uniform float uBigWavesElevation;
   uniform vec2 uBigWavesFrequency;
 
+  varying float vElevation;
+
   void main() {
     vec4 modelPosition = modelMatrix * vec4(position, 1.0);
     
@@ -39,6 +41,9 @@ const vertexShader = `
     vec4 projectedPosition = projectionMatrix * viewPosition;
     
     gl_Position = projectedPosition;
+
+    //varying
+    vElevation = elevation;
   }
 `;
 
@@ -46,8 +51,14 @@ const fragmentShader = `
   uniform vec3 uDepthColor;
   uniform vec3 uSurfaceColor;
 
+  varying float vElevation;
+
   void main() {
-    gl_FragColor = vec4(uSurfaceColor, 1.0);
+
+    float bottomUpValue = 0.2;
+    vec3 color = mix(uDepthColor, uSurfaceColor, vElevation) + bottomUpValue;
+
+    gl_FragColor = vec4(color, 1.0);
 
     #include <colorspace_fragment>
   }
