@@ -3,7 +3,7 @@ uniform sampler2D uTex;
 
 varying vec2 vUv;
 
-#include ./includes/rotate2D.glsl
+#include ./includes/rotate2d.glsl
 
 void main()
 {
