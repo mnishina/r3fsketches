@@ -47,6 +47,9 @@ const world = {
 function init() {
   console.log("world init");
 
+  const loadContainer = document.querySelector("#load");
+  const itemProgress = document.querySelector(".itemProgress");
+
   world.loadManager.onError = (itemURL) => {
     console.log("error", itemURL);
   };
@@ -58,6 +61,10 @@ function init() {
 
   world.loadManager.onProgress = (itemURL, itemLoaded, itemTotal) => {
     console.log("progress", itemURL, itemLoaded, itemTotal);
+
+    let loadNum = (itemLoaded / itemTotal) * 100;
+
+    itemProgress.textContent = `${loadNum}`;
   };
 
   world.loadManager.onLoad = () => {
@@ -67,6 +74,10 @@ function init() {
 
     _debug();
     _tick();
+
+    loadContainer.classList.add("loaded");
+
+    world.camera.position.set(3, -8, 7);
   };
 
   world.textureLoader.manager = world.loadManager;
@@ -83,7 +94,7 @@ function _createCamera() {
     0.1,
     1000,
   );
-  world.camera.position.set(3, -8, 7);
+  world.camera.position.set(0, 0, 10);
   world.scene.add(world.camera);
 }
 

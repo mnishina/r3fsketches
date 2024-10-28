@@ -6,6 +6,7 @@ import Layout from "@layouts/Layout.astro";
 
 <Layout title="Noise Shader Wave">
   <canvas id="canvas"></canvas>
+  <div id="load">Loaded <span class="itemProgress">0</span></div>
 </Layout>
 
 <style>
@@ -16,5 +17,39 @@ import Layout from "@layouts/Layout.astro";
     left: 0;
     top: 0;
     background-color: #fff;
+  }
+  #load {
+    position: fixed;
+    left: 0;
+    top: 0;
+    text-align: left;
+    font-size: 12px;
+    font-family:
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      Oxygen,
+      Ubuntu,
+      Cantarell,
+      "Open Sans",
+      "Helvetica Neue",
+      sans-serif;
+    background-color: transparent;
+    padding: 16px;
+    transition:
+      translate 0.2s ease-in-out,
+      opacity 0.2s ease-in-out;
+    transition-delay: 0.5s;
+
+    * {
+      background-color: transparent;
+    }
+  }
+
+  #load.loaded {
+    translate: -16px 0;
+    opacity: 0;
   }
 </style>
