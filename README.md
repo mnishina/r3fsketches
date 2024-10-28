@@ -1,3 +1,3 @@
-# R3F Sketches
+# Three.js Sketches
 
-https://r3fsketches.vercel.app/
+https://threejssketches.vercel.app/
