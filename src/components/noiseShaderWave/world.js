@@ -3,6 +3,7 @@
 console.log("world noiseShaderWave");
 
 import * as THREE from "three";
+import { gsap } from "gsap";
 import vertexShader from "./shaders/vertex2.glsl";
 import fragmentShader from "./shaders/fragment.glsl";
 
@@ -77,7 +78,17 @@ function init() {
 
     loadContainer.classList.add("loaded");
 
-    world.camera.position.set(3, -8, 7);
+    // カメラポジションのアニメーション
+    gsap.to(world.camera.position, {
+      x: 3,
+      y: -8,
+      z: 7,
+      duration: 2, // アニメーション時間（秒）
+      ease: "power2.inOut", // イージング
+      onUpdate: () => {
+        debug.controls.update();
+      },
+    });
   };
 
   world.textureLoader.manager = world.loadManager;
