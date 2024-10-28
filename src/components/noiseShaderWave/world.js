@@ -28,11 +28,51 @@ const world = {
   renderer: null,
   clock: new THREE.Clock(),
   time: 0,
+  loadManager: new THREE.LoadingManager(),
+  textureLoader: new THREE.TextureLoader(),
+  texture: {
+    noise: {
+      tex: null,
+      url: "/noise.png",
+    },
+    image: {
+      tex: null,
+      url: "/image.png",
+    },
+  },
 };
 
 function init() {
   console.log("world init");
 
+  world.loadManager.onStart = () => {
+    _createCamera();
+    _createRenderer();
+  };
+
+  world.loadManager.onProgress = (itemURL, itemLoaded, itemTotal) => {
+    console.log("progress", itemURL, itemLoaded, itemTotal);
+  };
+
+  world.loadManager.onLoad = () => {
+    console.log("loaded");
+
+    _createMesh();
+
+    _debug();
+    _tick();
+  };
+
+  world.loadManager.onError = (itemURL) => {
+    console.log("error", itemURL);
+  };
+
+  world.textureLoader.manager = world.loadManager;
+  world.texture.noise.tex = world.textureLoader.load(world.texture.noise.url);
+  world.texture.image.tex = world.textureLoader.load(world.texture.image.url);
+}
+
+function _createCamera() {
   world.camera = new THREE.PerspectiveCamera(
     35,
     world.sizes.width / world.sizes.height,
@@ -41,29 +81,36 @@ function init() {
   );
   world.camera.position.z = 6;
   world.scene.add(world.camera);
+}
 
+function _createRenderer() {
   world.renderer = new THREE.WebGLRenderer({
     canvas: $.canvas,
   });
   world.renderer.setSize(world.sizes.width, world.sizes.height, false);
+}
 
+function _createMesh() {
   world.geometry = new THREE.PlaneGeometry(2, 3, 30, 30);
   world.material = new THREE.ShaderMaterial({
     side: THREE.DoubleSide,
-    wireframe: true,
+    // wireframe: true,
     vertexShader,
     fragmentShader,
     uniforms: {
       uTime: {
         value: world.elapsedTime,
       },
+      uNoiseTex: {
+        value: world.texture.noise.tex,
+      },
+      uImageTex: {
+        value: world.texture.image.tex,
+      },
     },
   });
   world.mesh = new THREE.Mesh(world.geometry, world.material);
   world.scene.add(world.mesh);
-
-  _debug();
-  _tick();
 }
 
 function _debug() {

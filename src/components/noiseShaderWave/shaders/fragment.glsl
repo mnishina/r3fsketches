@@ -1,5 +1,14 @@
+uniform float uTime;
+uniform sampler2D uImageTex;
+
 varying vec2 vUv;
 
 void main() {
-  gl_FragColor = vec4(vUv.x, 0.0, 0.5, 1.0);
+  
+  vec4 imageTex = texture(uImageTex, vUv);
+
+  gl_FragColor = imageTex;
+
+  // #include <tonemapping_fragment>
+  // #include <colorspace_fragment>
 }
