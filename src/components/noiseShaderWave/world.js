@@ -78,12 +78,12 @@ function init() {
 
 function _createCamera() {
   world.camera = new THREE.PerspectiveCamera(
-    35,
+    24,
     world.sizes.width / world.sizes.height,
     0.1,
     1000,
   );
-  world.camera.position.z = 6;
+  world.camera.position.set(3, -8, 7);
   world.scene.add(world.camera);
 }
 
@@ -91,12 +91,15 @@ function _createRenderer() {
   world.renderer = new THREE.WebGLRenderer({
     canvas: $.canvas,
     antialias: true,
+    transparent: true,
+    depthWrite: false,
   });
   world.renderer.setSize(world.sizes.width, world.sizes.height, false);
+  world.renderer.setClearColor(0x000000, 0);
 }
 
 function _createMesh() {
-  world.geometry = new THREE.PlaneGeometry(2, 3, 16, 16);
+  world.geometry = new THREE.PlaneGeometry(2, 3, 24, 24);
   world.material = new THREE.ShaderMaterial({
     side: THREE.DoubleSide,
     // wireframe: true,
@@ -115,6 +118,7 @@ function _createMesh() {
     },
   });
   world.mesh = new THREE.Mesh(world.geometry, world.material);
+  world.mesh.position.set(0, -0.1, 0);
   world.scene.add(world.mesh);
 }
 
