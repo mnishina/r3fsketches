@@ -1,7 +1,9 @@
+// reference -> https://www.youtube.com/watch?v=kxXaIHi1j4w
+
 console.log("world noiseShaderWave");
 
 import * as THREE from "three";
-import vertexShader from "./shaders/vertex.glsl";
+import vertexShader from "./shaders/vertex2.glsl";
 import fragmentShader from "./shaders/fragment.glsl";
 
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -45,6 +47,10 @@ const world = {
 function init() {
   console.log("world init");
 
+  world.loadManager.onError = (itemURL) => {
+    console.log("error", itemURL);
+  };
+
   world.loadManager.onStart = () => {
     _createCamera();
     _createRenderer();
@@ -63,13 +69,11 @@ function init() {
     _tick();
   };
 
-  world.loadManager.onError = (itemURL) => {
-    console.log("error", itemURL);
-  };
-
   world.textureLoader.manager = world.loadManager;
   world.texture.noise.tex = world.textureLoader.load(world.texture.noise.url);
   world.texture.image.tex = world.textureLoader.load(world.texture.image.url);
+  world.texture.noise.tex.wrapS = THREE.RepeatWrapping;
+  world.texture.noise.tex.wrapT = THREE.RepeatWrapping;
 }
 
 function _createCamera() {
@@ -86,12 +90,13 @@ function _createCamera() {
 function _createRenderer() {
   world.renderer = new THREE.WebGLRenderer({
     canvas: $.canvas,
+    antialias: true,
   });
   world.renderer.setSize(world.sizes.width, world.sizes.height, false);
 }
 
 function _createMesh() {
-  world.geometry = new THREE.PlaneGeometry(2, 3, 30, 30);
+  world.geometry = new THREE.PlaneGeometry(2, 3, 16, 16);
   world.material = new THREE.ShaderMaterial({
     side: THREE.DoubleSide,
     // wireframe: true,
