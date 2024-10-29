@@ -13,6 +13,8 @@ const world = {
     width: innerWidth,
     height: innerHeight,
   },
+  loadManager: new THREE.LoadingManager(),
+  textureLoader: new THREE.TextureLoader(),
   scene: new THREE.Scene(),
   renderer: null,
   camera: null,
@@ -21,6 +23,8 @@ const world = {
   fov: 0,
   aspectRatio: 0,
   geometry: null,
+  tex: null,
+  images: [],
   material: null,
   materials: [],
   mesh: null,
@@ -38,14 +42,32 @@ function init() {
   world.sizes.canvasWidth = width;
   world.sizes.canvasHeight = height;
 
-  _createMesh();
-  _createCamera();
-  _createRenderer();
+  world.textureLoader.manager = world.loadManager;
+  world.loadManager.onError = (url) => console.log("error");
+  world.loadManager.onStart = () => {
+    _createCamera();
+    _createRenderer();
+  };
+  world.loadManager.onProgress = (itemURL, itemLoaded, itemTotal) => {
+    console.log("PROGRESS", itemURL, itemLoaded, itemTotal);
+  };
+  world.loadManager.onLoad = () => {
+    console.log("loaded");
 
-  _tick();
+    _createMesh();
+    _tick();
+  };
+
+  $.img.forEach((img) => {
+    const image = {
+      tex: world.textureLoader.load(img.getAttribute("src")),
+    };
+    world.images.push(image);
+  });
 }
 
 function _createMesh() {
+  let i = 0;
   $.img.forEach(function (img) {
     const { width, height, elementLeft, elementTop } = _getWorldPosition(img);
     const imgRect = img.getBoundingClientRect();
@@ -57,6 +79,9 @@ function _createMesh() {
       uniforms: {
         uTime: {
           value: world.time,
+        },
+        uTex: {
+          value: world.images[i].tex,
         },
       },
     });
@@ -78,9 +103,9 @@ function _createMesh() {
     world.materials.push(world.material);
 
     world.scene.add(world.mesh);
-  });
 
-  console.log(world.elems);
+    i++;
+  });
 }
 
 function _createCamera() {
