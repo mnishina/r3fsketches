@@ -16,15 +16,16 @@ const world = {
   scene: new THREE.Scene(),
   renderer: null,
   camera: null,
+  near: 0.1,
+  perspective: 1000,
+  fov: 0,
+  aspectRatio: 0,
   geometry: null,
   material: null,
   materials: [],
   mesh: null,
   meshes: [],
-  near: 0.1,
-  perspective: 1000,
-  fov: 0,
-  aspectRatio: 0,
+  elems: [],
   clock: new THREE.Clock(),
   time: 0,
   init,
@@ -32,6 +33,10 @@ const world = {
 
 function init() {
   console.log("init");
+
+  const { width, height } = $.canvas.getBoundingClientRect();
+  world.sizes.canvasWidth = width;
+  world.sizes.canvasHeight = height;
 
   _createMesh();
   _createCamera();
@@ -41,8 +46,11 @@ function init() {
 }
 
 function _createMesh() {
-  for (let index = 0; index < 3; index++) {
-    world.geometry = new THREE.PlaneGeometry(100, 100, 30, 30);
+  $.img.forEach(function (img) {
+    const { width, height, elementLeft, elementTop } = _getWorldPosition(img);
+    const imgRect = img.getBoundingClientRect();
+
+    world.geometry = new THREE.PlaneGeometry(width, height, 30, 30);
     world.material = new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
@@ -53,15 +61,26 @@ function _createMesh() {
       },
     });
     world.mesh = new THREE.Mesh(world.geometry, world.material);
-    world.mesh.position.set(index * 100, 0, 0);
+    world.mesh.position.set(elementLeft, elementTop, 0);
+
+    const elem = {
+      imgRect,
+      geometry: world.geometry,
+      material: world.material,
+      mesh: world.mesh,
+      $: {
+        img,
+      },
+    };
+    world.elems.push(elem);
 
     world.meshes.push(world.mesh);
     world.materials.push(world.material);
 
-    console.log(world.meshes);
-
     world.scene.add(world.mesh);
-  }
+  });
+
+  console.log(world.elems);
 }
 
 function _createCamera() {
@@ -86,19 +105,43 @@ function _createRenderer() {
     antialias: true,
     alpha: true,
   });
-  world.renderer.setSize(world.sizes.width, world.sizes.height, false);
+  world.renderer.setSize(
+    world.sizes.canvasWidth,
+    world.sizes.canvasHeight,
+    false,
+  );
 }
 
 function _tick() {
   requestAnimationFrame(_tick);
 
   world.time = world.clock.getElapsedTime();
-
   world.materials.forEach((material) => {
     material.uniforms.uTime.value = world.time;
   });
 
+  world.elems.forEach((elem) => _scrollElem(elem));
+
   world.renderer.render(world.scene, world.camera);
+}
+
+function _scrollElem(elem) {
+  const {
+    mesh,
+    $: { img },
+  } = elem;
+
+  const { elementTop } = _getWorldPosition(img);
+  mesh.position.y = elementTop;
+}
+
+function _getWorldPosition(elem) {
+  const { width, height, left, top } = elem.getBoundingClientRect();
+
+  const elementLeft = left - world.sizes.canvasWidth / 2 + width / 2;
+  const elementTop = -(top - world.sizes.canvasHeight / 2 + height / 2);
+
+  return { width, height, elementLeft, elementTop };
 }
 
 export default world;
