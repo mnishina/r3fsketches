@@ -18,7 +18,9 @@ const world = {
   camera: null,
   geometry: null,
   material: null,
+  materials: [],
   mesh: null,
+  meshes: [],
   near: 0.1,
   perspective: 1000,
   fov: 0,
@@ -31,23 +33,35 @@ const world = {
 function init() {
   console.log("init");
 
-  world.geometry = new THREE.PlaneGeometry(1, 1, 30, 30);
-  world.material = new THREE.ShaderMaterial({
-    vertexShader,
-    fragmentShader,
-    uniforms: {
-      uTime: {
-        value: world.time,
-      },
-    },
-  });
-  world.mesh = new THREE.Mesh(world.geometry, world.material);
-  world.scene.add(world.mesh);
-
+  _createMesh();
   _createCamera();
   _createRenderer();
 
   _tick();
+}
+
+function _createMesh() {
+  for (let index = 0; index < 3; index++) {
+    world.geometry = new THREE.PlaneGeometry(100, 100, 30, 30);
+    world.material = new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      uniforms: {
+        uTime: {
+          value: world.time,
+        },
+      },
+    });
+    world.mesh = new THREE.Mesh(world.geometry, world.material);
+    world.mesh.position.set(index * 100, 0, 0);
+
+    world.meshes.push(world.mesh);
+    world.materials.push(world.material);
+
+    console.log(world.meshes);
+
+    world.scene.add(world.mesh);
+  }
 }
 
 function _createCamera() {
@@ -79,7 +93,10 @@ function _tick() {
   requestAnimationFrame(_tick);
 
   world.time = world.clock.getElapsedTime();
-  world.material.uniforms.uTime.value = world.time;
+
+  world.materials.forEach((material) => {
+    material.uniforms.uTime.value = world.time;
+  });
 
   world.renderer.render(world.scene, world.camera);
 }
