@@ -6,6 +6,22 @@ import Layout from "@layouts/Layout.astro";
 
 <Layout title="Distortion Scroll">
   <canvas id="canvas"></canvas>
+
+  <div>
+    <img src="/bnw001.png" alt="" data-webgl decoding="async" />
+  </div>
+  <div>
+    <img src="/bnw002.png" alt="" data-webgl decoding="async" />
+  </div>
+  <div>
+    <img src="/bnw003.png" alt="" data-webgl decoding="async" />
+  </div>
+  <div>
+    <img src="/bnw004.png" alt="" data-webgl decoding="async" />
+  </div>
+  <div>
+    <img src="/bnw005.png" alt="" data-webgl decoding="async" />
+  </div>
 </Layout>
 
 <style>
@@ -15,5 +31,25 @@ import Layout from "@layouts/Layout.astro";
     position: fixed;
     left: 0;
     top: 0;
+    z-index: -1;
+  }
+
+  img {
+    vertical-align: bottom;
+  }
+
+  html,
+  div,
+  canvas,
+  img {
+    background-color: transparent;
+  }
+
+  body {
+    background-color: #161616;
+  }
+  div {
+    text-align: center;
+    padding: 25vh 0;
   }
 </style>

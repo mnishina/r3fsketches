@@ -5,6 +5,7 @@ import fragmentShader from "./shaders/fragment.glsl";
 
 const $ = {
   canvas: document.querySelector("#canvas"),
+  img: document.querySelectorAll("[data-webgl]"),
 };
 
 const world = {
@@ -18,6 +19,10 @@ const world = {
   geometry: null,
   material: null,
   mesh: null,
+  near: 0.1,
+  perspective: 1000,
+  fov: 0,
+  aspectRatio: 0,
   clock: new THREE.Clock(),
   time: 0,
   init,
@@ -39,23 +44,35 @@ function init() {
   world.mesh = new THREE.Mesh(world.geometry, world.material);
   world.scene.add(world.mesh);
 
-  // camera
-  world.camera = new THREE.PerspectiveCamera(
-    75,
-    world.sizes.width / world.sizes.height,
-    0.1,
-    1000,
-  );
-  world.camera.position.set(0, 0, 1);
-  world.scene.add(world.camera);
+  _createCamera();
+  _createRenderer();
 
+  _tick();
+}
+
+function _createCamera() {
+  world.aspectRatio = world.sizes.width / world.sizes.height;
+  world.fov =
+    (2 * Math.atan(world.sizes.height / 2 / world.perspective) * 180) / Math.PI;
+
+  world.camera = new THREE.PerspectiveCamera(
+    world.fov,
+    world.aspectRatio,
+    world.near,
+    world.perspective,
+  );
+  world.camera.position.set(0, 0, world.perspective);
+
+  world.scene.add(world.camera);
+}
+
+function _createRenderer() {
   world.renderer = new THREE.WebGLRenderer({
     canvas: $.canvas,
     antialias: true,
+    alpha: true,
   });
   world.renderer.setSize(world.sizes.width, world.sizes.height, false);
-
-  _tick();
 }
 
 function _tick() {
