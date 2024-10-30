@@ -6,7 +6,7 @@ uniform sampler2D uTex;
 varying vec2 vUv;
 
 vec3 rgbShift(sampler2D uTex, vec2 uv, vec2 offset) {
-  float r = texture(uTex, uv + offset).r;
+  float r = texture(uTex, uv + (offset * 0.5)).r;
   vec2 gb = texture(uTex, uv).gb;
   
   return vec3(r, gb);
