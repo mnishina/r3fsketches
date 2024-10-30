@@ -33,6 +33,9 @@ const world = {
   elems: [],
   clock: new THREE.Clock(),
   time: 0,
+  target: 0,
+  current: 0,
+  ease: 0.075,
   init,
 };
 
@@ -87,7 +90,7 @@ function _createMesh() {
       },
     };
 
-    const geometry = new THREE.PlaneGeometry(width, height, 30, 30);
+    const geometry = new THREE.PlaneGeometry(1, 1, 30, 30);
     const material = new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
@@ -95,6 +98,7 @@ function _createMesh() {
     });
     const mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(elementLeft, elementTop, 0);
+    mesh.scale.set(width, height, 0);
 
     const elem = {
       $: {
@@ -147,10 +151,10 @@ function _createRenderer(canvas, canvasRect) {
 function _tick() {
   requestAnimationFrame(_tick);
 
-  world.time = world.clock.getElapsedTime();
-  world.materials.forEach((material) => {
-    material.uniforms.uTime.value = world.time;
-  });
+  // world.time = world.clock.getElapsedTime();
+  // world.materials.forEach((material) => {
+  //   material.uniforms.uTime.value = world.time;
+  // });
 
   world.elems.forEach((elem) => _scrollElem(elem));
 
@@ -159,12 +163,20 @@ function _tick() {
 
 function _scrollElem(elem) {
   const {
+    material,
     mesh,
     $: { img },
   } = elem;
 
-  const { elementTop } = _getWorldPosition(img);
+  const { elementLeft, elementTop } = _getWorldPosition(img);
   mesh.position.y = elementTop;
+
+  world.target = scrollY;
+  world.current = _lerp(world.current, world.target, world.ease);
+  material.uniforms.uOffset.value.set(
+    elementLeft,
+    -(world.target - world.current) * 0.003,
+  );
 }
 
 function _getWorldPosition(elem) {
