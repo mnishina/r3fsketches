@@ -12,22 +12,23 @@ const world = {
   sizes: {
     width: innerWidth,
     height: innerHeight,
+    canvasWidth: null,
+    canvasHeight: null,
   },
   loadManager: new THREE.LoadingManager(),
   textureLoader: new THREE.TextureLoader(),
   scene: new THREE.Scene(),
   renderer: null,
+
   camera: null,
   near: 0.1,
   perspective: 1000,
   fov: 0,
   aspectRatio: 0,
-  geometry: null,
+
   tex: null,
   images: [],
-  material: null,
   materials: [],
-  mesh: null,
   meshes: [],
   elems: [],
   clock: new THREE.Clock(),
@@ -38,22 +39,22 @@ const world = {
 function init() {
   console.log("init");
 
-  const { width, height } = $.canvas.getBoundingClientRect();
+  const canvasRect = $.canvas.getBoundingClientRect();
+  const { width, height } = canvasRect;
   world.sizes.canvasWidth = width;
   world.sizes.canvasHeight = height;
 
   world.textureLoader.manager = world.loadManager;
   world.loadManager.onError = (url) => console.log("error");
-  world.loadManager.onStart = () => {
-    _createCamera();
-    _createRenderer();
-  };
+  world.loadManager.onStart = () => {};
   world.loadManager.onProgress = (itemURL, itemLoaded, itemTotal) => {
     console.log("PROGRESS", itemURL, itemLoaded, itemTotal);
   };
   world.loadManager.onLoad = () => {
     console.log("loaded");
 
+    _createCamera(canvasRect);
+    _createRenderer($.canvas, canvasRect);
     _createMesh();
     _tick();
   };
@@ -69,49 +70,57 @@ function init() {
 function _createMesh() {
   let i = 0;
   $.img.forEach(function (img) {
-    const { width, height, elementLeft, elementTop } = _getWorldPosition(img);
     const imgRect = img.getBoundingClientRect();
+    const { width, height, elementLeft, elementTop } = _getWorldPosition(img);
+    const uniforms = {
+      uTime: {
+        value: world.time,
+      },
+      uOffset: {
+        value: new THREE.Vector2(0, 0),
+      },
+      uAlpha: {
+        value: 1.0,
+      },
+      uTex: {
+        value: world.images[i].tex,
+      },
+    };
 
-    world.geometry = new THREE.PlaneGeometry(width, height, 30, 30);
-    world.material = new THREE.ShaderMaterial({
+    const geometry = new THREE.PlaneGeometry(width, height, 30, 30);
+    const material = new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
-      uniforms: {
-        uTime: {
-          value: world.time,
-        },
-        uTex: {
-          value: world.images[i].tex,
-        },
-      },
+      uniforms,
     });
-    world.mesh = new THREE.Mesh(world.geometry, world.material);
-    world.mesh.position.set(elementLeft, elementTop, 0);
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(elementLeft, elementTop, 0);
 
     const elem = {
       $: {
         img,
       },
       imgRect,
-      geometry: world.geometry,
-      material: world.material,
-      mesh: world.mesh,
+      geometry,
+      material,
+      mesh,
     };
     world.elems.push(elem);
 
-    world.meshes.push(world.mesh);
-    world.materials.push(world.material);
+    world.meshes.push(mesh);
+    world.materials.push(material);
 
-    world.scene.add(world.mesh);
+    world.scene.add(mesh);
 
     i++;
   });
 }
 
-function _createCamera() {
-  world.aspectRatio = world.sizes.width / world.sizes.height;
-  world.fov =
-    (2 * Math.atan(world.sizes.height / 2 / world.perspective) * 180) / Math.PI;
+function _createCamera(canvasRect) {
+  const { width, height } = canvasRect;
+
+  world.aspectRatio = width / height;
+  world.fov = (2 * Math.atan(height / 2 / world.perspective) * 180) / Math.PI;
 
   world.camera = new THREE.PerspectiveCamera(
     world.fov,
@@ -124,17 +133,15 @@ function _createCamera() {
   world.scene.add(world.camera);
 }
 
-function _createRenderer() {
+function _createRenderer(canvas, canvasRect) {
+  const { width, height } = canvasRect;
+
   world.renderer = new THREE.WebGLRenderer({
-    canvas: $.canvas,
+    canvas,
     antialias: true,
     alpha: true,
   });
-  world.renderer.setSize(
-    world.sizes.canvasWidth,
-    world.sizes.canvasHeight,
-    false,
-  );
+  world.renderer.setSize(width, height, false);
 }
 
 function _tick() {
@@ -167,6 +174,10 @@ function _getWorldPosition(elem) {
   const elementTop = -(top - world.sizes.canvasHeight / 2 + height / 2);
 
   return { width, height, elementLeft, elementTop };
+}
+
+function _lerp(start, end, t) {
+  return start * (1 - t) + end * t;
 }
 
 export default world;
