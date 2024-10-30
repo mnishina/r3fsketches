@@ -89,13 +89,13 @@ function _createMesh() {
     world.mesh.position.set(elementLeft, elementTop, 0);
 
     const elem = {
+      $: {
+        img,
+      },
       imgRect,
       geometry: world.geometry,
       material: world.material,
       mesh: world.mesh,
-      $: {
-        img,
-      },
     };
     world.elems.push(elem);
 
