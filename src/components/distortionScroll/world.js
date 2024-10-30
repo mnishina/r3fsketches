@@ -1,3 +1,5 @@
+// reference -> https://www.youtube.com/watch?v=DdQn82X1G3I
+
 console.log("world");
 import * as THREE from "three";
 import vertexShader from "./shaders/vertex.glsl";
