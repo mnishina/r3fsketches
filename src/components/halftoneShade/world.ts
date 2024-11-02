@@ -54,19 +54,32 @@ function init(canvas: HTMLCanvasElement, canvasRect: DOMRect) {
 }
 
 function _createMesh() {
-  const geometry = new THREE.BoxGeometry(200, 200, 200, 10, 10, 10);
-
   const material = new THREE.ShaderMaterial({
     wireframe: true,
     uniforms: {},
     vertexShader,
     fragmentShader,
   });
-  const mesh = new THREE.Mesh(geometry, material);
 
-  world.scene.add(mesh);
+  const geometries = [
+    {
+      geometry: new THREE.BoxGeometry(140, 140, 140, 10, 10, 10),
+    },
+    {
+      geometry: new THREE.SphereGeometry(90, 10),
+    },
+  ];
 
-  world.meshes.push(mesh);
+  let i = 0;
+  geometries.forEach((geometry: { geometry: THREE.BufferGeometry }) => {
+    const mesh = new THREE.Mesh(geometry.geometry, material);
+    mesh.position.set(200 * i - 90, 0, 0);
+
+    world.scene.add(mesh);
+    world.meshes.push(mesh);
+
+    i++;
+  });
 }
 
 function _createCamera(canvasRect: DOMRect) {
