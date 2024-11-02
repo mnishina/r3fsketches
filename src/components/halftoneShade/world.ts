@@ -1,7 +1,29 @@
 console.log("world");
 import * as THREE from "three";
 
-const world = {
+import vertexShader from "./shaders/vertexShader.glsl";
+import fragmentShader from "./shaders/fragmentShader.glsl";
+
+interface World {
+  init: (canvas: HTMLCanvasElement, canvasRect: DOMRect) => void;
+  sizes: {
+    width: number;
+    height: number;
+    canvasWidth: number;
+    canvasHeight: number;
+  };
+  canvasRect?: DOMRect;
+  renderer?: THREE.WebGLRenderer;
+  scene: THREE.Scene;
+  camera?: THREE.PerspectiveCamera;
+  fov: number;
+  aspectRatio: number;
+  near: number;
+  far: number;
+  meshes: THREE.Mesh[];
+}
+
+const world: World = {
   init,
   sizes: {
     width: innerWidth,
@@ -9,15 +31,15 @@ const world = {
     canvasWidth: 0,
     canvasHeight: 0,
   },
-  canvasRect: undefined as DOMRect | undefined,
-  renderer: undefined as THREE.WebGLRenderer | undefined,
+  canvasRect: undefined,
+  renderer: undefined,
   scene: new THREE.Scene(),
-  camera: undefined as THREE.PerspectiveCamera | undefined,
+  camera: undefined,
   fov: 0,
   aspectRatio: 0,
   near: 0.1,
   far: 1000,
-  meshes: [] as THREE.Mesh[],
+  meshes: [],
 };
 
 function init(canvas: HTMLCanvasElement, canvasRect: DOMRect) {
@@ -33,9 +55,12 @@ function init(canvas: HTMLCanvasElement, canvasRect: DOMRect) {
 
 function _createMesh() {
   const geometry = new THREE.BoxGeometry(200, 200, 200, 10, 10, 10);
-  const material = new THREE.MeshBasicMaterial({
-    color: 0xff0000,
+
+  const material = new THREE.ShaderMaterial({
     wireframe: true,
+    uniforms: {},
+    vertexShader,
+    fragmentShader,
   });
   const mesh = new THREE.Mesh(geometry, material);
 
