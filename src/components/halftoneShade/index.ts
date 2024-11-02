@@ -8,4 +8,4 @@ const $ = {
 
 const canvasRect = $.canvas.getBoundingClientRect();
 
-world.init(canvasRect);
+world.init($.canvas, canvasRect);
