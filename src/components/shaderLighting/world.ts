@@ -4,6 +4,8 @@ import * as THREE from "three";
 import vertexShader from "./shaders/vertexShader.glsl";
 import fragmentShader from "./shaders/fragmentShader.glsl";
 
+import Utils from "../Utils/index";
+
 interface World {
   init: (canvas: HTMLCanvasElement, canvasRect: DOMRect) => void;
   sizes: {
@@ -50,6 +52,9 @@ function init(canvas: HTMLCanvasElement, canvasRect: DOMRect) {
   _createRenderer(canvas, canvasRect);
   _createCamera(canvasRect);
   _createMesh();
+
+  Utils.setupOrbitControl(world.camera!, canvas);
+
   _tick();
 }
 
@@ -123,6 +128,8 @@ function _tick() {
     mesh.rotation.x += 0.01;
     mesh.rotation.y += 0.01;
   });
+
+  Utils.control?.update();
 
   world.renderer && world.renderer.render(world.scene, world.camera!);
 }
