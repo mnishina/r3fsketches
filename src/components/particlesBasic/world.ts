@@ -73,14 +73,6 @@ function _createCamera() {
   world.camera.position.set(0, 0, 5);
 }
 
-function _createMesh() {
-  const mesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(3, 3, 30),
-    new THREE.MeshBasicMaterial({ color: 0x0cc000, side: THREE.DoubleSide }),
-  );
-  world.scene.add(mesh);
-}
-
 function _tick() {
   requestAnimationFrame(_tick);
 
@@ -95,6 +87,17 @@ function _defineCanvas(canvasRect: DOMRect) {
   world.sizes.canvasHeight = height;
 
   world.canvasRect = canvasRect;
+}
+
+function _createMesh() {
+  const geometry = new THREE.SphereGeometry();
+  const material = new THREE.PointsMaterial();
+  material.size = 0.02;
+  material.sizeAttenuation = true;
+
+  const mesh = new THREE.Points(geometry, material);
+
+  world.scene.add(mesh);
 }
 
 export default world;
