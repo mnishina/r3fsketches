@@ -9,6 +9,7 @@ import {
   BufferAttribute,
   PointsMaterial,
   AdditiveBlending,
+  Color,
 } from "three";
 
 interface World {
@@ -28,6 +29,7 @@ interface World {
   aspectRatio: number | null;
   near: number;
   far: number;
+  points: Points | null;
 }
 
 const world: World = {
@@ -47,6 +49,7 @@ const world: World = {
   aspectRatio: null,
   near: 0.1,
   far: 1000,
+  points: null,
 };
 
 function init(canvas: HTMLCanvasElement, canvasRect: DOMRect) {
@@ -89,13 +92,17 @@ function _createCamera() {
     world.far,
   );
 
-  world.camera.position.set(5, 5, 5);
+  world.camera.position.set(5, 7, 10);
 }
 
 function _tick() {
   requestAnimationFrame(_tick);
 
-  world.renderer && world.renderer.render(world.scene, world.camera!);
+  world.renderer?.render(world.scene, world.camera!);
+
+  if (world.points) {
+    world.points.rotation.y += 0.0005;
+  }
 }
 
 interface Parameters {
@@ -106,22 +113,30 @@ interface Parameters {
   spin: number;
   randomness: number;
   randomnessPower: number;
+  colorInside: string;
+  colorOutside: string;
 }
 
 const parameters: Parameters = {
   count: 100000,
   size: 0.02,
-  radius: 5,
-  branches: 3,
+  radius: 6,
+  branches: 4,
   spin: 1,
   randomness: 0.2,
   randomnessPower: 3,
+  colorInside: "#ff6030",
+  colorOutside: "#1b3984",
 };
 
 function _createMesh() {
   const geometry = new BufferGeometry();
 
   const positions = new Float32Array(parameters.count * 3);
+  const colors = new Float32Array(parameters.count * 3);
+
+  const colorInside = new Color(parameters.colorInside);
+  const colorOutside = new Color(parameters.colorOutside);
 
   for (let i = 0; i < parameters.count; i++) {
     const i3 = i * 3;
@@ -148,19 +163,30 @@ function _createMesh() {
     positions[i3 + 0] = Math.cos(branchAngle + spinAngle) * radius + randomX;
     positions[i3 + 1] = randomY;
     positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
+
+    // colors
+    const mixedColor = colorInside.clone();
+    mixedColor.lerp(colorOutside, radius / parameters.radius);
+    colors[i3 + 0] = mixedColor.r;
+    colors[i3 + 1] = mixedColor.g;
+    colors[i3 + 2] = mixedColor.b;
   }
 
   geometry.setAttribute("position", new BufferAttribute(positions, 3));
+  geometry.setAttribute("color", new BufferAttribute(colors, 3));
 
   const material = new PointsMaterial({
     size: parameters.size,
     sizeAttenuation: true,
     depthWrite: true,
     blending: AdditiveBlending,
+    vertexColors: true,
   });
 
-  const mesh = new Points(geometry, material);
-  world.scene.add(mesh);
+  const points = new Points(geometry, material);
+  world.scene.add(points);
+
+  world.points = points;
 }
 
 function _addGUI() {
