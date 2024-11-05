@@ -1,12 +1,14 @@
 console.log("world");
+import Utils from "../Utils/index";
 import {
   Scene,
   PerspectiveCamera,
   WebGLRenderer,
-  Mesh,
   Points,
-  MeshBasicMaterial,
-  PlaneGeometry,
+  BufferGeometry,
+  BufferAttribute,
+  PointsMaterial,
+  AdditiveBlending,
 } from "three";
 
 interface World {
@@ -14,8 +16,8 @@ interface World {
   sizes: {
     width: number;
     height: number;
-    canvasWidth: number;
-    canvasHeight: number;
+    canvasWidth: number | null;
+    canvasHeight: number | null;
   };
   canvas: HTMLCanvasElement | null;
   canvasRect: DOMRect | null;
@@ -23,7 +25,7 @@ interface World {
   scene: Scene;
   camera: PerspectiveCamera | null;
   fov: number;
-  aspectRatio: number;
+  aspectRatio: number | null;
   near: number;
   far: number;
 }
@@ -33,8 +35,8 @@ const world: World = {
   sizes: {
     width: window.innerWidth,
     height: window.innerHeight,
-    canvasWidth: 0,
-    canvasHeight: 0,
+    canvasWidth: null,
+    canvasHeight: null,
   },
   canvas: null,
   canvasRect: null,
@@ -42,7 +44,7 @@ const world: World = {
   scene: new Scene(),
   camera: null,
   fov: 50,
-  aspectRatio: 0,
+  aspectRatio: null,
   near: 0.1,
   far: 1000,
 };
@@ -63,6 +65,9 @@ function init(canvas: HTMLCanvasElement, canvasRect: DOMRect) {
   _createMesh();
 
   _tick();
+
+  _addGUI();
+  Utils.setupOrbitControl(world.camera!, canvas);
 }
 
 function _createRenderer(canvas: HTMLCanvasElement) {
@@ -70,12 +75,12 @@ function _createRenderer(canvas: HTMLCanvasElement) {
     canvas: canvas,
     antialias: true,
   });
-  world.renderer.setSize(world.sizes.canvasWidth, world.sizes.canvasHeight);
+  world.renderer.setSize(world.sizes.canvasWidth!, world.sizes.canvasHeight!);
   world.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
 }
 
 function _createCamera() {
-  world.aspectRatio = world.sizes.canvasWidth / world.sizes.canvasHeight;
+  world.aspectRatio = world.sizes.canvasWidth! / world.sizes.canvasHeight!;
 
   world.camera = new PerspectiveCamera(
     world.fov,
@@ -84,7 +89,7 @@ function _createCamera() {
     world.far,
   );
 
-  world.camera.position.set(0, 0, 5);
+  world.camera.position.set(5, 5, 5);
 }
 
 function _tick() {
@@ -93,12 +98,73 @@ function _tick() {
   world.renderer && world.renderer.render(world.scene, world.camera!);
 }
 
+interface Parameters {
+  count: number;
+  size: number;
+  radius: number;
+  branches: number;
+  spin: number;
+  randomness: number;
+  randomnessPower: number;
+}
+
+const parameters: Parameters = {
+  count: 100000,
+  size: 0.02,
+  radius: 5,
+  branches: 3,
+  spin: 1,
+  randomness: 0.2,
+  randomnessPower: 3,
+};
+
 function _createMesh() {
-  const mesh = new Mesh(
-    new PlaneGeometry(2, 2, 12, 12),
-    new MeshBasicMaterial({ color: 0xff0000, wireframe: true }),
-  );
+  const geometry = new BufferGeometry();
+
+  const positions = new Float32Array(parameters.count * 3);
+
+  for (let i = 0; i < parameters.count; i++) {
+    const i3 = i * 3;
+
+    const radius = Math.random() * parameters.radius;
+    const spinAngle = radius * parameters.spin;
+    const branchAngle =
+      ((i % parameters.branches) / parameters.branches) * Math.PI * 2;
+
+    const randomX =
+      Math.pow(Math.random(), parameters.randomnessPower) *
+      (Math.random() < 0.5 ? 1 : -1);
+    const randomY =
+      Math.pow(Math.random(), parameters.randomnessPower) *
+      (Math.random() < 0.5 ? 1 : -1);
+    const randomZ =
+      Math.pow(Math.random(), parameters.randomnessPower) *
+      (Math.random() < 0.5 ? 1 : -1);
+
+    // if (i < 20) {
+    //   console.log(branchAngle);
+    // }
+
+    positions[i3 + 0] = Math.cos(branchAngle + spinAngle) * radius + randomX;
+    positions[i3 + 1] = randomY;
+    positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
+  }
+
+  geometry.setAttribute("position", new BufferAttribute(positions, 3));
+
+  const material = new PointsMaterial({
+    size: parameters.size,
+    sizeAttenuation: true,
+    depthWrite: true,
+    blending: AdditiveBlending,
+  });
+
+  const mesh = new Points(geometry, material);
   world.scene.add(mesh);
+}
+
+function _addGUI() {
+  Utils.setupGUI();
 }
 
 export default world;
