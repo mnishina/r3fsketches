@@ -1,10 +1,15 @@
 ---
-import Layout from "@layouts/Layout.astro";
+import Layout from "~/layouts/Layout.astro";
+
+import { pagesData, getPageTitle } from "~/data/pages";
+const title = getPageTitle(pagesData, Astro.url.pathname);
 ---
 
-<script src="../../components/noiseShaderWave/index.js"></script>
+<script>
+  import "../../components/noiseShaderWave/index.js";
+</script>
 
-<Layout title="Noise Shader Wave">
+<Layout title={title}>
   <canvas id="canvas"></canvas>
   <div id="load">Loaded <span class="itemProgress">0</span></div>
 </Layout>

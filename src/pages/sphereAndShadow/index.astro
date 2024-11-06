@@ -1,8 +1,11 @@
 ---
-import Layout from "@layouts/Layout.astro";
-import Scene from "@components/sphereAndShadow/Scene";
+import Layout from "~/layouts/Layout.astro";
+import Scene from "~/components/sphereAndShadow/Scene";
+
+import { pagesData, getPageTitle } from "~/data/pages";
+const title = getPageTitle(pagesData, Astro.url.pathname);
 ---
 
-<Layout title="Sphere and Shadow">
+<Layout title={title}>
   <Scene client:load />
 </Layout>

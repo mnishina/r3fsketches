@@ -1,8 +1,11 @@
 ---
-import Layout from "@layouts/Layout.astro";
-import Scene from "@components/shaderModel/Scene";
+import Layout from "~/layouts/Layout.astro";
+import Scene from "~/components/shaderModel/Scene";
+
+import { pagesData, getPageTitle } from "~/data/pages";
+const title = getPageTitle(pagesData, Astro.url.pathname);
 ---
 
-<Layout title="Shader Model">
+<Layout title={title}>
   <Scene client:load />
 </Layout>

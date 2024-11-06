@@ -1,12 +1,15 @@
 ---
-import Layout from "@layouts/Layout.astro";
+import Layout from "~/layouts/Layout.astro";
+
+import { pagesData, getPageTitle } from "~/data/pages";
+const title = getPageTitle(pagesData, Astro.url.pathname);
 ---
 
 <script>
   import "../../components/wireSphere/index.ts";
 </script>
 
-<Layout title="Wire Sphere">
+<Layout title={title}>
   <canvas id="canvas"></canvas>
 </Layout>
 

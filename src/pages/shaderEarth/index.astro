@@ -1,10 +1,15 @@
 ---
-import Layout from "@layouts/Layout.astro";
+import Layout from "~/layouts/Layout.astro";
+
+import { pagesData, getPageTitle } from "~/data/pages";
+const title = getPageTitle(pagesData, Astro.url.pathname);
 ---
 
-<script src="../../components/shaderEarth/index.ts"></script>
+<script>
+  import "../../components/shaderEarth/index.ts";
+</script>
 
-<Layout title="Shader Earth">
+<Layout title={title}>
   <canvas id="canvas"></canvas>
 </Layout>
 

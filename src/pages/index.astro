@@ -1,72 +1,14 @@
 ---
-import Layout from "@layouts/Layout.astro";
-
-const pages = [
-  {
-    name: "First Scene",
-    url: "/firstScene/",
-  },
-  {
-    name: "Shader Model",
-    url: "/shaderModel/",
-  },
-  {
-    name: "Sphere and Shadow",
-    url: "/sphereAndShadow/",
-  },
-  {
-    name: "Shader Wave",
-    url: "/shaderWave/",
-  },
-  {
-    name: "Shader Smoke",
-    url: "/shaderSmoke/",
-  },
-  {
-    name: "Noise Shader Wave",
-    url: "/noiseShaderWave/",
-  },
-  {
-    name: "Distortion Scroll",
-    url: "/distortionScroll/",
-  },
-  {
-    name: "Wire Sphere",
-    url: "/wireSphere/",
-  },
-  {
-    name: "Texture Earth",
-    url: "/textureEarth/",
-  },
-  {
-    name: "WIP）Shader Earth",
-    url: "/shaderEarth/",
-  },
-  {
-    name: "WIP）Halftone Shade",
-    url: "/halftoneShade/",
-  },
-  {
-    name: "Particles Basic",
-    url: "/particlesBasic/",
-  },
-  {
-    name: "Particles Gallaxy",
-    url: "/particlesGallaxy/",
-  },
-  {
-    name: "Shader Lighting",
-    url: "/shaderLighting/",
-  },
-];
+import Layout from "~/layouts/Layout.astro";
+import { pagesData } from "~/data/pages";
 ---
 
 <Layout title="Three.js Sketches">
   <ul>
     {
-      pages.map((page, index) => (
+      pagesData.map((page, index) => (
         <li>
-          <a href={page.url}>{page.name}</a>
+          <a href={page.url}>{page.title}</a>
         </li>
       ))
     }

@@ -1,8 +1,11 @@
 ---
-import Layout from "@layouts/Layout.astro";
-import Scene from "@components/shaderWave/Scene";
+import Layout from "~/layouts/Layout.astro";
+import Scene from "~/components/shaderWave/Scene";
+
+import { pagesData, getPageTitle } from "~/data/pages";
+const title = getPageTitle(pagesData, Astro.url.pathname);
 ---
 
-<Layout title="Shader Wave">
+<Layout title={title}>
   <Scene client:load />
 </Layout>
