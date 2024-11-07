@@ -7,6 +7,7 @@ interface Utils {
   setupOrbitControl: (camera: THREE.Camera, canvas: HTMLCanvasElement) => void;
   gui: GUI | null;
   setupGUI: () => void;
+  setupAxesHelper: () => THREE.AxesHelper;
 }
 
 const Utils: Utils = {
@@ -14,6 +15,7 @@ const Utils: Utils = {
   setupOrbitControl,
   gui: null,
   setupGUI,
+  setupAxesHelper,
 };
 
 function setupOrbitControl(camera: THREE.Camera, canvas: HTMLCanvasElement) {
@@ -24,6 +26,12 @@ function setupOrbitControl(camera: THREE.Camera, canvas: HTMLCanvasElement) {
 
 function setupGUI() {
   Utils.gui = new GUI();
+}
+
+function setupAxesHelper() {
+  const axesHelper = new THREE.AxesHelper();
+
+  return axesHelper;
 }
 
 export default Utils;
