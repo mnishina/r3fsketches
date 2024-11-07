@@ -8,6 +8,8 @@ import {
   Mesh,
   DoubleSide,
   Clock,
+  Vector2,
+  Color,
 } from "three";
 
 import vertexShader from "./shaders/vertexShader.glsl";
@@ -28,9 +30,14 @@ interface World {
   aspect: number | null;
   near: number;
   far: number;
+  segments: number;
   renderer: WebGLRenderer | null;
   clock: Clock;
   objects: (ShaderMaterial | Mesh)[];
+  debug: {
+    depthColor: string;
+    surfaceColor: string;
+  };
 }
 
 const world: World = {
@@ -48,9 +55,14 @@ const world: World = {
   aspect: null,
   near: 0.1,
   far: 1000,
+  segments: 32,
   renderer: null,
   clock: new Clock(),
   objects: [],
+  debug: {
+    depthColor: "#186691",
+    surfaceColor: "#ccc8ff",
+  },
 };
 
 function init(canvas: HTMLCanvasElement) {
@@ -97,7 +109,7 @@ function _createCamera(canvasWidth: number, canvasHeight: number) {
 }
 
 function _createMesh() {
-  const geometry = new PlaneGeometry(1, 1, 10, 10);
+  const geometry = new PlaneGeometry(1, 1, world.segments, world.segments);
   const material = new ShaderMaterial({
     side: DoubleSide,
     wireframe: true,
@@ -105,6 +117,25 @@ function _createMesh() {
     fragmentShader,
     uniforms: {
       uTime: { value: 0 },
+
+      uBigWavesElevation: {
+        value: 0.2,
+      },
+      uBigWavesFrequency: {
+        value: new Vector2(3, 1.8),
+      },
+      uBigWavesSpeed: { value: 0.75 },
+
+      uSmallWavesElevation: { value: 0.15 },
+      uSmallWavesFrequency: { value: 3 },
+      uSmallWavesSpeed: { value: 0.2 },
+      uSmallWavesIterations: { value: 4 },
+
+      uDepthColor: { value: new Color(world.debug.depthColor) },
+      uSurfaceColor: { value: new Color(world.debug.surfaceColor) },
+
+      uColorOffset: { value: 0.1 },
+      uColorMultiplier: { value: 5 },
     },
   });
   const mesh = new Mesh(geometry, material);
