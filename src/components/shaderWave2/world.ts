@@ -10,6 +10,7 @@ import {
   Clock,
   Vector2,
   Color,
+  ACESFilmicToneMapping,
 } from "three";
 
 import vertexShader from "./shaders/vertexShader.glsl";
@@ -84,9 +85,9 @@ function init(canvas: HTMLCanvasElement) {
 
   Util.setupOrbitControl(world.camera, canvas);
 
-  const axesHelper = Util.setupAxesHelper();
-  axesHelper.position.set(0, 0.25, 0);
-  world.scene.add(axesHelper);
+  // const axesHelper = Util.setupAxesHelper();
+  // axesHelper.position.set(0, 0.25, 0);
+  // world.scene.add(axesHelper);
 }
 
 function _createRenderer(canvas: HTMLCanvasElement) {
@@ -95,6 +96,7 @@ function _createRenderer(canvas: HTMLCanvasElement) {
     antialias: true,
     alpha: true,
   });
+  world.renderer.toneMapping = ACESFilmicToneMapping;
   world.renderer.setPixelRatio(world.pixelRatio);
   world.renderer.setSize(
     world.sizes.canvasWidth!,
@@ -113,11 +115,14 @@ function _createCamera(canvasWidth: number, canvasHeight: number) {
     world.far,
   );
 
-  world.camera.position.set(2, 1, 2);
+  world.camera.position.set(0.1, 0.75, 0.55);
 }
 
 function _createMesh() {
-  const geometry = new PlaneGeometry(2.5, 1, world.segments, world.segments);
+  const geometry = new PlaneGeometry(2.5, 3.5, world.segments, world.segments);
+  geometry.deleteAttribute("normal");
+  geometry.deleteAttribute("uv");
+
   const material = new ShaderMaterial({
     // wireframe: true,
     side: DoubleSide,
