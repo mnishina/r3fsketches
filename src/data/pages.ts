@@ -16,6 +16,10 @@ export const pagesData = [
     url: "/shaderWave/",
   },
   {
+    title: "Shader Wave 2",
+    url: "/shaderWave2/",
+  },
+  {
     title: "Shader Smoke",
     url: "/shaderSmoke/",
   },
