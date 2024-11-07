@@ -15,6 +15,8 @@ import {
 import vertexShader from "./shaders/vertexShader.glsl";
 import fragmentShader from "./shaders/fragmentShader.glsl";
 
+import Util from "../Utils/index";
+
 interface World {
   init: (canvas: HTMLCanvasElement) => void;
   sizes: {
@@ -55,13 +57,13 @@ const world: World = {
   aspect: null,
   near: 0.1,
   far: 1000,
-  segments: 32,
+  segments: 512,
   renderer: null,
   clock: new Clock(),
   objects: [],
   debug: {
-    depthColor: "#186691",
-    surfaceColor: "#ccc8ff",
+    depthColor: "#ff4000",
+    surfaceColor: "#151c37",
   },
 };
 
@@ -79,6 +81,12 @@ function init(canvas: HTMLCanvasElement) {
   _createMesh();
 
   _render();
+
+  Util.setupOrbitControl(world.camera, canvas);
+
+  const axesHelper = Util.setupAxesHelper();
+  axesHelper.position.set(0, 0.25, 0);
+  world.scene.add(axesHelper);
 }
 
 function _createRenderer(canvas: HTMLCanvasElement) {
@@ -105,14 +113,14 @@ function _createCamera(canvasWidth: number, canvasHeight: number) {
     world.far,
   );
 
-  world.camera.position.z = 1;
+  world.camera.position.set(2, 1, 2);
 }
 
 function _createMesh() {
-  const geometry = new PlaneGeometry(1, 1, world.segments, world.segments);
+  const geometry = new PlaneGeometry(2.5, 1, world.segments, world.segments);
   const material = new ShaderMaterial({
+    // wireframe: true,
     side: DoubleSide,
-    wireframe: true,
     vertexShader,
     fragmentShader,
     uniforms: {
@@ -134,8 +142,8 @@ function _createMesh() {
       uDepthColor: { value: new Color(world.debug.depthColor) },
       uSurfaceColor: { value: new Color(world.debug.surfaceColor) },
 
-      uColorOffset: { value: 0.1 },
-      uColorMultiplier: { value: 5 },
+      uColorOffset: { value: 0.925 },
+      uColorMultiplier: { value: 1 },
     },
   });
   const mesh = new Mesh(geometry, material);
