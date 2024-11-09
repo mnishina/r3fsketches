@@ -1,8 +1,22 @@
 console.log("world");
-import { WebGLRenderer, Scene, PerspectiveCamera, Mesh, BoxGeometry, SphereGeometry, ShaderMaterial, BufferGeometry } from "three";
+import {
+  WebGLRenderer,
+  Scene,
+  PerspectiveCamera,
+  Mesh,
+  BoxGeometry,
+  SphereGeometry,
+  ShaderMaterial,
+  BufferGeometry,
+  Color,
+  Vector2,
+  TorusKnotGeometry,
+} from "three";
 
 import vertexShader from "./shaders/vertexShader.glsl";
 import fragmentShader from "./shaders/fragmentShader.glsl";
+
+import Util from "~/components/Utils/index";
 
 interface World {
   init: (canvas: HTMLCanvasElement, canvasRect: DOMRect) => void;
@@ -20,6 +34,7 @@ interface World {
   aspectRatio: number;
   near: number;
   far: number;
+  pixelRatio: number;
   meshes: Mesh[];
 }
 
@@ -39,6 +54,7 @@ const world: World = {
   aspectRatio: 0,
   near: 0.1,
   far: 1000,
+  pixelRatio: Math.min(window.devicePixelRatio, 2),
   meshes: [],
 };
 
@@ -51,22 +67,38 @@ function init(canvas: HTMLCanvasElement, canvasRect: DOMRect) {
   _createCamera(canvasRect);
   _createMesh();
   _tick();
+
+  Util.setupOrbitControl(world.camera!, canvas);
 }
 
 function _createMesh() {
+  const materialParameters = {
+    color: new Color(0xff794d),
+    shadeColor: new Color(0xff794d),
+  };
+
   const material = new ShaderMaterial({
-    wireframe: true,
-    uniforms: {},
+    // wireframe: true,
+    uniforms: {
+      uColor: { value: new Color(materialParameters.color) },
+      uShadeColor: { value: new Color(materialParameters.shadeColor) },
+      uResolution: {
+        value: new Vector2(
+          world.sizes.canvasWidth * world.pixelRatio,
+          world.sizes.canvasHeight * world.pixelRatio,
+        ),
+      },
+    },
     vertexShader,
     fragmentShader,
   });
 
   const geometries = [
     {
-      geometry: new BoxGeometry(140, 140, 140, 10, 10, 10),
+      geometry: new TorusKnotGeometry(50, 20, 100, 16),
     },
     {
-      geometry: new SphereGeometry(90, 10),
+      geometry: new SphereGeometry(90, 128),
     },
   ];
 
@@ -85,7 +117,8 @@ function _createMesh() {
 function _createCamera(canvasRect: DOMRect) {
   const { width, height } = canvasRect;
 
-  world.fov = (2 * Math.atan(height / 2 / world.far) * 180) / Math.PI;
+  // world.fov = (2 * Math.atan(height / 2 / world.far) * 180) / Math.PI;
+  world.fov = 50;
   world.aspectRatio = width / height;
 
   world.camera = new PerspectiveCamera(
@@ -105,7 +138,7 @@ function _createRenderer(canvas: HTMLCanvasElement, canvasRect: DOMRect) {
     antialias: true,
   });
   world.renderer.setSize(world.sizes.width, world.sizes.height);
-  world.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  world.renderer.setPixelRatio(world.pixelRatio);
 }
 
 function _tick() {
