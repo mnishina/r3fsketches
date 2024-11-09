@@ -1,5 +1,5 @@
 console.log("world");
-import * as THREE from "three";
+import { WebGLRenderer, Scene, PerspectiveCamera, Mesh, BoxGeometry, SphereGeometry, ShaderMaterial, BufferGeometry } from "three";
 
 import vertexShader from "./shaders/vertexShader.glsl";
 import fragmentShader from "./shaders/fragmentShader.glsl";
@@ -13,14 +13,14 @@ interface World {
     canvasHeight: number;
   };
   canvasRect?: DOMRect;
-  renderer?: THREE.WebGLRenderer;
-  scene: THREE.Scene;
-  camera?: THREE.PerspectiveCamera;
+  renderer?: WebGLRenderer;
+  scene: Scene;
+  camera?: PerspectiveCamera;
   fov: number;
   aspectRatio: number;
   near: number;
   far: number;
-  meshes: THREE.Mesh[];
+  meshes: Mesh[];
 }
 
 const world: World = {
@@ -33,7 +33,7 @@ const world: World = {
   },
   canvasRect: undefined,
   renderer: undefined,
-  scene: new THREE.Scene(),
+  scene: new Scene(),
   camera: undefined,
   fov: 0,
   aspectRatio: 0,
@@ -54,7 +54,7 @@ function init(canvas: HTMLCanvasElement, canvasRect: DOMRect) {
 }
 
 function _createMesh() {
-  const material = new THREE.ShaderMaterial({
+  const material = new ShaderMaterial({
     wireframe: true,
     uniforms: {},
     vertexShader,
@@ -63,16 +63,16 @@ function _createMesh() {
 
   const geometries = [
     {
-      geometry: new THREE.BoxGeometry(140, 140, 140, 10, 10, 10),
+      geometry: new BoxGeometry(140, 140, 140, 10, 10, 10),
     },
     {
-      geometry: new THREE.SphereGeometry(90, 10),
+      geometry: new SphereGeometry(90, 10),
     },
   ];
 
   let i = 0;
-  geometries.forEach((geometry: { geometry: THREE.BufferGeometry }) => {
-    const mesh = new THREE.Mesh(geometry.geometry, material);
+  geometries.forEach((geometry: { geometry: BufferGeometry }) => {
+    const mesh = new Mesh(geometry.geometry, material);
     mesh.position.set(200 * i - 90, 0, 0);
 
     world.scene.add(mesh);
@@ -88,7 +88,7 @@ function _createCamera(canvasRect: DOMRect) {
   world.fov = (2 * Math.atan(height / 2 / world.far) * 180) / Math.PI;
   world.aspectRatio = width / height;
 
-  world.camera = new THREE.PerspectiveCamera(
+  world.camera = new PerspectiveCamera(
     world.fov,
     world.aspectRatio,
     world.near,
@@ -100,7 +100,7 @@ function _createCamera(canvasRect: DOMRect) {
 }
 
 function _createRenderer(canvas: HTMLCanvasElement, canvasRect: DOMRect) {
-  world.renderer = new THREE.WebGLRenderer({
+  world.renderer = new WebGLRenderer({
     canvas,
     antialias: true,
   });
