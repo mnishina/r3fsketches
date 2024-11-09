@@ -44,7 +44,7 @@ export const pagesData = [
     url: "/shaderEarth/",
   },
   {
-    title: "WIP）Halftone Shade",
+    title: "Halftone Shade",
     url: "/halftoneShade/",
   },
   {
