@@ -1,6 +1,10 @@
 uniform vec3 uColor;
 uniform vec3 uShadeColor;
 uniform vec2 uResolution;
+uniform float uShadowRepetitions;
+uniform vec3 uShadowColor;
+uniform float uLightRepetitions;
+uniform vec3 uLightColor;
 
 varying vec2 vUv;
 varying vec3 vNormal;
@@ -11,6 +15,29 @@ varying mat3 vNormalMatrix;
 #include "../../Utils/shaders/directionalLight.glsl"
 #include "../../Utils/shaders/pointLight.glsl"
 
+vec3 halftone(
+  vec3 color,
+  float repetitions,
+  vec3 direction,
+  float low,
+  float high,
+  vec3 pointColor,
+  vec3 normal
+)
+{
+  float intensity = dot(normal, direction); // 法線とライトの方向の内積
+  intensity = smoothstep(low, high, intensity);
+
+  // マスのサイズを調整
+  vec2 uv = gl_FragCoord.xy / uResolution.y; // yで割るとマスが正方形になる
+  uv *= repetitions;
+  uv = mod(uv, 1.0); // uv = fract(uv); fractでも同じっぽい
+  
+  float point = distance(uv, vec2(0.5));
+  point = 1.0 - step(0.5 * intensity, point);
+  
+  return mix(color, pointColor, point);
+}
 
 void main() {
 
@@ -39,24 +66,30 @@ void main() {
 
   color *= light;
 
-  //halftone
-  float repetitions = 50.0;
-  vec3 direction = vec3(0.0, -1.0, 0.0);
-  float low = - 0.8;
-  float high = 1.5;
-
-  float intensity = dot(normal, direction); // 法線とライトの方向の内積
-  intensity = smoothstep(low, high, intensity);
-
-  // マスのサイズを調整
-  vec2 uv = gl_FragCoord.xy / uResolution.y; // yで割るとマスが正方形になる
-  uv *= repetitions;
-  uv = mod(uv, 1.0); // uv = fract(uv); fractでも同じっぽい
+  // Halftone
+  // Shadow
+  color = halftone(
+    color, // color
+    uShadowRepetitions, // repetitions
+    vec3(0.0, - 1.0, 0.0), // direction
+    - 0.8, // low
+    1.5, // high
+    uShadowColor, // pointColor
+    normal // normal
+  );
   
-  float point = distance(uv, vec2(0.5));
-  point = 1.0 - step(0.5 * intensity, point);
+  // Light
+  color = halftone(
+    color, // color
+    uLightRepetitions, // repetitions
+    vec3(1.0, 1.0, 0.0), // direction
+    0.5, // low
+    1.5, // high
+    uLightColor, // pointColor
+    normal // normal
+  );
 
-  gl_FragColor = vec4(point,point,point, 1.0);
+  gl_FragColor = vec4(color, 1.0);
 
   #include <tonemapping_fragment>
   #include <colorspace_fragment>

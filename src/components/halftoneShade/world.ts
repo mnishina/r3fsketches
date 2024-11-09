@@ -74,7 +74,8 @@ function init(canvas: HTMLCanvasElement, canvasRect: DOMRect) {
 function _createMesh() {
   const materialParameters = {
     color: new Color(0xff794d),
-    shadeColor: new Color(0xff794d),
+    shadeColor: new Color(0x8e19b8),
+    lightColor: new Color(0xe5ffe0),
   };
 
   const material = new ShaderMaterial({
@@ -88,6 +89,10 @@ function _createMesh() {
           world.sizes.canvasHeight * world.pixelRatio,
         ),
       },
+      uShadowRepetitions: { value: 125.0 },
+      uShadowColor: { value: new Color(materialParameters.shadeColor) },
+      uLightRepetitions: { value: 150.0 },
+      uLightColor: { value: new Color(materialParameters.lightColor) },
     },
     vertexShader,
     fragmentShader,
@@ -146,7 +151,7 @@ function _tick() {
 
   world.meshes.forEach((mesh) => {
     mesh.rotation.x += 0.001;
-    mesh.rotation.y += 0.001;
+    mesh.rotation.z += 0.001;
   });
 
   world.renderer && world.renderer.render(world.scene, world.camera!);
