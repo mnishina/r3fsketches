@@ -17,19 +17,19 @@ interface World {
   sizes: {
     width: number;
     height: number;
-    canvasWidth: number | null;
-    canvasHeight: number | null;
+    canvasWidth: number | undefined;
+    canvasHeight: number | undefined;
   };
-  canvas: HTMLCanvasElement | null;
-  canvasRect: DOMRect | null;
-  renderer: WebGLRenderer | null;
+  canvas: HTMLCanvasElement | undefined;
+  canvasRect: DOMRect | undefined;
+  renderer: WebGLRenderer | undefined;
   scene: Scene;
-  camera: PerspectiveCamera | null;
+  camera: PerspectiveCamera | undefined;
   fov: number;
-  aspectRatio: number | null;
+  aspectRatio: number | undefined;
   near: number;
   far: number;
-  points: Points | null;
+  points: Points | undefined;
 }
 
 const world: World = {
@@ -37,19 +37,19 @@ const world: World = {
   sizes: {
     width: window.innerWidth,
     height: window.innerHeight,
-    canvasWidth: null,
-    canvasHeight: null,
+    canvasWidth: undefined,
+    canvasHeight: undefined,
   },
-  canvas: null,
-  canvasRect: null,
-  renderer: null,
+  canvas: undefined,
+  canvasRect: undefined,
+  renderer: undefined,
   scene: new Scene(),
-  camera: null,
+  camera: undefined,
   fov: 50,
-  aspectRatio: null,
+  aspectRatio: undefined,
   near: 0.1,
   far: 1000,
-  points: null,
+  points: undefined,
 };
 
 function init(canvas: HTMLCanvasElement, canvasRect: DOMRect) {
