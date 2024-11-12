@@ -56,7 +56,7 @@ export const pagesData = [
     url: "/particlesGallaxy/",
   },
   {
-    title: "Particles Gallaxy Shader",
+    title: "WIP）Particles Gallaxy Shader",
     url: "/particlesGallaxyShader/",
   },
   {
