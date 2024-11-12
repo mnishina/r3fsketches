@@ -8,9 +8,13 @@ import {
   BufferGeometry,
   BufferAttribute,
   PointsMaterial,
+  ShaderMaterial,
   AdditiveBlending,
   Color,
 } from "three";
+
+import vertexShader from "./shaders/vertexShader.glsl";
+import fragmentShader from "./shaders/fragmentShader.glsl";
 
 interface World {
   init: (canvas: HTMLCanvasElement, canvasRect: DOMRect) => void;
@@ -79,7 +83,7 @@ function _createRenderer(canvas: HTMLCanvasElement) {
     antialias: true,
   });
   world.renderer.setSize(world.sizes.canvasWidth!, world.sizes.canvasHeight!);
-  world.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+  world.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 }
 
 function _createCamera() {
@@ -100,14 +104,18 @@ function _tick() {
 
   world.renderer?.render(world.scene, world.camera!);
 
-  if (world.points) {
-    world.points.rotation.y += 0.0005;
-  }
+  // if (world.points) {
+  //   world.points.rotation.y += 0.0005;
+  // }
+}
+
+function _addGUI() {
+  Utils.setupGUI();
 }
 
 interface Parameters {
   count: number;
-  size: number;
+  // size: number;
   radius: number;
   branches: number;
   spin: number;
@@ -119,11 +127,11 @@ interface Parameters {
 
 const parameters: Parameters = {
   count: 100000,
-  size: 0.02,
-  radius: 6,
-  branches: 4,
+  // size: 0.005,
+  radius: 5,
+  branches: 3,
   spin: 1,
-  randomness: 0.2,
+  randomness: 0.5,
   randomnessPower: 3,
   colorInside: "#ff6030",
   colorOutside: "#1b3984",
@@ -134,6 +142,7 @@ function _createMesh() {
 
   const positions = new Float32Array(parameters.count * 3);
   const colors = new Float32Array(parameters.count * 3);
+  const scale = new Float32Array(parameters.count * 1);
 
   const colorInside = new Color(parameters.colorInside);
   const colorOutside = new Color(parameters.colorOutside);
@@ -142,27 +151,32 @@ function _createMesh() {
     const i3 = i * 3;
 
     const radius = Math.random() * parameters.radius;
-    const spinAngle = radius * parameters.spin;
     const branchAngle =
       ((i % parameters.branches) / parameters.branches) * Math.PI * 2;
 
     const randomX =
       Math.pow(Math.random(), parameters.randomnessPower) *
-      (Math.random() < 0.5 ? 1 : -1);
+      (Math.random() < 0.5 ? 1 : -1) *
+      parameters.randomness *
+      radius;
     const randomY =
       Math.pow(Math.random(), parameters.randomnessPower) *
-      (Math.random() < 0.5 ? 1 : -1);
+      (Math.random() < 0.5 ? 1 : -1) *
+      parameters.randomness *
+      radius;
     const randomZ =
       Math.pow(Math.random(), parameters.randomnessPower) *
-      (Math.random() < 0.5 ? 1 : -1);
+      (Math.random() < 0.5 ? 1 : -1) *
+      parameters.randomness *
+      radius;
 
     // if (i < 20) {
     //   console.log(branchAngle);
     // }
 
-    positions[i3 + 0] = Math.cos(branchAngle + spinAngle) * radius + randomX;
+    positions[i3 + 0] = Math.cos(branchAngle) * radius + randomX;
     positions[i3 + 1] = randomY;
-    positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
+    positions[i3 + 2] = Math.sin(branchAngle) * radius + randomZ;
 
     // colors
     const mixedColor = colorInside.clone();
@@ -170,27 +184,30 @@ function _createMesh() {
     colors[i3 + 0] = mixedColor.r;
     colors[i3 + 1] = mixedColor.g;
     colors[i3 + 2] = mixedColor.b;
+
+    // scale
+    scale[i] = Math.random();
   }
 
   geometry.setAttribute("position", new BufferAttribute(positions, 3));
   geometry.setAttribute("color", new BufferAttribute(colors, 3));
+  geometry.setAttribute("aScale", new BufferAttribute(scale, 1));
 
-  const material = new PointsMaterial({
-    size: parameters.size,
-    sizeAttenuation: true,
-    depthWrite: true,
+  const material = new ShaderMaterial({
+    depthWrite: false,
     blending: AdditiveBlending,
     vertexColors: true,
+    vertexShader,
+    fragmentShader,
+    uniforms: {
+      uSize: { value: 8 * world.renderer!.getPixelRatio() },
+    },
   });
 
   const points = new Points(geometry, material);
   world.scene.add(points);
 
   world.points = points;
-}
-
-function _addGUI() {
-  Utils.setupGUI();
 }
 
 export default world;
