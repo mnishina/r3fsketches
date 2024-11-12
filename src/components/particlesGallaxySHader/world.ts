@@ -7,7 +7,6 @@ import {
   Points,
   BufferGeometry,
   BufferAttribute,
-  PointsMaterial,
   ShaderMaterial,
   AdditiveBlending,
   Color,
