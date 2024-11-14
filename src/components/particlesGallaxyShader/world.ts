@@ -95,7 +95,7 @@ function _createCamera() {
     world.far,
   );
 
-  world.camera.position.set(5, 7, 10);
+  world.camera.position.set(3, 6, 6);
 }
 
 function _tick() {
@@ -125,7 +125,7 @@ interface Parameters {
 }
 
 const parameters: Parameters = {
-  count: 100000,
+  count: 200000,
   // size: 0.005,
   radius: 5,
   branches: 3,
@@ -199,7 +199,7 @@ function _createMesh() {
     vertexShader,
     fragmentShader,
     uniforms: {
-      uSize: { value: 8 * world.renderer!.getPixelRatio() },
+      uSize: { value: 30 * world.renderer!.getPixelRatio() },
     },
   });
 
