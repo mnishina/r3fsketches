@@ -10,6 +10,7 @@ import {
   ShaderMaterial,
   AdditiveBlending,
   Color,
+  Clock,
 } from "three";
 
 import vertexShader from "./shaders/vertexShader.glsl";
@@ -33,6 +34,9 @@ interface World {
   near: number;
   far: number;
   points: Points | undefined;
+  clock: Clock;
+  time: number;
+  material: ShaderMaterial | undefined;
 }
 
 const world: World = {
@@ -53,6 +57,9 @@ const world: World = {
   near: 0.1,
   far: 1000,
   points: undefined,
+  time: 0,
+  clock: new Clock(),
+  material: undefined,
 };
 
 function init(canvas: HTMLCanvasElement, canvasRect: DOMRect) {
@@ -100,6 +107,9 @@ function _createCamera() {
 
 function _tick() {
   requestAnimationFrame(_tick);
+
+  const elapsedTime = world.clock.getElapsedTime();
+  world.material!.uniforms.uTime.value = elapsedTime;
 
   world.renderer?.render(world.scene, world.camera!);
 
@@ -200,8 +210,10 @@ function _createMesh() {
     fragmentShader,
     uniforms: {
       uSize: { value: 30 * world.renderer!.getPixelRatio() },
+      uTime: { value: 0 },
     },
   });
+  world.material = material;
 
   const points = new Points(geometry, material);
   world.scene.add(points);
