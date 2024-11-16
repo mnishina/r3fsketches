@@ -47,3 +47,4 @@ desktop.ini
 *.swo
 .temp/
 .astro
+.vercel/
