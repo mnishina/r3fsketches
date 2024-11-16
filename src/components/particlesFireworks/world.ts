@@ -1,13 +1,23 @@
 console.log("world particlesFireworks");
-import * as THREE from "three";
+import {
+  Scene,
+  PerspectiveCamera,
+  WebGLRenderer,
+  BoxGeometry,
+  Mesh,
+  ShaderMaterial,
+} from "three";
+
+import vertexShader from "./shaders/vertexShader.glsl";
+import fragmentShader from "./shaders/fragmentShader.glsl";
 
 interface World {
-  scene: THREE.Scene;
+  scene: Scene;
   init: (canvas: HTMLCanvasElement) => void;
 }
 
 const world: World = {
-  scene: new THREE.Scene(),
+  scene: new Scene(),
   init,
 };
 
@@ -18,12 +28,12 @@ function init(canvas: HTMLCanvasElement) {
   const { width, height } = canvasRect;
 
   //camera
-  const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+  const camera = new PerspectiveCamera(75, width / height, 0.1, 1000);
   camera.position.z = 5;
   world.scene.add(camera);
 
   //renderer
-  const renderer = new THREE.WebGLRenderer({ canvas });
+  const renderer = new WebGLRenderer({ canvas });
   renderer.setSize(width, height, false);
 
   _createMesh();
@@ -31,20 +41,24 @@ function init(canvas: HTMLCanvasElement) {
   _tick(renderer, camera);
 }
 
-function _tick(renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera) {
+function _tick(renderer: WebGLRenderer, camera: PerspectiveCamera) {
   requestAnimationFrame(() => _tick(renderer, camera));
 
   renderer.render(world.scene, camera);
 }
 
 function _createMesh() {
-  const geometry = new THREE.BoxGeometry(1, 1, 1);
-  const material = new THREE.MeshBasicMaterial({
-    color: 0x00ff00,
+  const geometry = new BoxGeometry(1, 1, 1);
+  const material = new ShaderMaterial({
     wireframe: true,
+    vertexShader,
+    fragmentShader,
+    uniforms: {
+      uTime: { value: 0 },
+    },
   });
-  const cube = new THREE.Mesh(geometry, material);
-  world.scene.add(cube);
+  const mesh = new Mesh(geometry, material);
+  world.scene.add(mesh);
 }
 
 export default world;
