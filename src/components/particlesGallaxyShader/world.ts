@@ -140,7 +140,7 @@ const parameters: Parameters = {
   radius: 5,
   branches: 3,
   spin: 1,
-  randomness: 0.5,
+  randomness: 0.2,
   randomnessPower: 3,
   colorInside: "#ff6030",
   colorOutside: "#1b3984",
@@ -152,6 +152,7 @@ function _createMesh() {
   const positions = new Float32Array(parameters.count * 3);
   const colors = new Float32Array(parameters.count * 3);
   const scale = new Float32Array(parameters.count * 1);
+  const random = new Float32Array(parameters.count * 3);
 
   const colorInside = new Color(parameters.colorInside);
   const colorOutside = new Color(parameters.colorOutside);
@@ -163,6 +164,7 @@ function _createMesh() {
     const branchAngle =
       ((i % parameters.branches) / parameters.branches) * Math.PI * 2;
 
+    // Randomness
     const randomX =
       Math.pow(Math.random(), parameters.randomnessPower) *
       (Math.random() < 0.5 ? 1 : -1) *
@@ -179,13 +181,17 @@ function _createMesh() {
       parameters.randomness *
       radius;
 
+    random[i3 + 0] = randomX;
+    random[i3 + 1] = randomY;
+    random[i3 + 2] = randomZ;
+
     // if (i < 20) {
     //   console.log(branchAngle);
     // }
 
-    positions[i3 + 0] = Math.cos(branchAngle) * radius + randomX;
-    positions[i3 + 1] = randomY;
-    positions[i3 + 2] = Math.sin(branchAngle) * radius + randomZ;
+    positions[i3 + 0] = Math.cos(branchAngle) * radius;
+    positions[i3 + 1] = 0;
+    positions[i3 + 2] = Math.sin(branchAngle) * radius;
 
     // colors
     const mixedColor = colorInside.clone();
@@ -201,6 +207,7 @@ function _createMesh() {
   geometry.setAttribute("position", new BufferAttribute(positions, 3));
   geometry.setAttribute("color", new BufferAttribute(colors, 3));
   geometry.setAttribute("aScale", new BufferAttribute(scale, 1));
+  geometry.setAttribute("aRandomness", new BufferAttribute(random, 3));
 
   const material = new ShaderMaterial({
     depthWrite: false,
