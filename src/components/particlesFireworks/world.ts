@@ -12,6 +12,7 @@ import {
   TextureLoader,
   LoadingManager,
   Texture,
+  AdditiveBlending,
 } from "three";
 
 import vertexShader from "./shaders/vertexShader.glsl";
@@ -53,13 +54,19 @@ function init(canvas: HTMLCanvasElement) {
 
   world.textureLoader.manager = world.loadManager;
   const texture = [
-    world.textureLoader.load("/star.png"),
-    world.textureLoader.load("/symbol_02.png"),
+    world.textureLoader.load("/particles/1.png"),
+    world.textureLoader.load("/particles/2.png"),
+    world.textureLoader.load("/particles/3.png"),
+    world.textureLoader.load("/particles/4.png"),
+    world.textureLoader.load("/particles/5.png"),
+    world.textureLoader.load("/particles/6.png"),
+    world.textureLoader.load("/particles/7.png"),
+    world.textureLoader.load("/particles/8.png"),
   ];
 
   //camera
-  const camera = new PerspectiveCamera(75, width / height, 0.1, 1000);
-  camera.position.z = 5;
+  const camera = new PerspectiveCamera(25, width / height, 0.1, 100);
+  camera.position.set(1.5, 0, 6);
   world.scene.add(camera);
 
   //renderer
@@ -67,7 +74,7 @@ function init(canvas: HTMLCanvasElement) {
   renderer.setSize(width, height, false);
   renderer.setPixelRatio(world.sizes.pixelRatio);
 
-  _createFireworks(100, new Vector3(), 0.5, texture[0]);
+  _createFireworks(100, new Vector3(), 0.5, texture[7]);
 
   _tick(renderer, camera);
 
@@ -87,6 +94,7 @@ function _createFireworks(
   texture: Texture,
 ) {
   const positionsArray = new Float32Array(count * 3);
+  const sizesArray = new Float32Array(count);
 
   for (let i = 0; i < count; i++) {
     const i3 = i * 3;
@@ -94,6 +102,8 @@ function _createFireworks(
     positionsArray[i3] = Math.random() - 0.5;
     positionsArray[i3 + 1] = Math.random() - 0.5;
     positionsArray[i3 + 2] = Math.random() - 0.5;
+
+    sizesArray[i] = Math.random();
   }
 
   const geometry = new BufferGeometry();
@@ -101,12 +111,15 @@ function _createFireworks(
     "position",
     new Float32BufferAttribute(positionsArray, 3),
   );
+  geometry.setAttribute("aSize", new Float32BufferAttribute(sizesArray, 1));
 
   texture.flipY = false; //これをやらないとテクスチャの上下を反転する
 
   const material = new ShaderMaterial({
-    transparent: true,
     wireframe: true,
+    transparent: true,
+    depthWrite: false,
+    blending: AdditiveBlending,
     vertexShader,
     fragmentShader,
     uniforms: {
