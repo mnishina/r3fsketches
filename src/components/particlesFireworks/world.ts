@@ -14,6 +14,7 @@ import {
   LoadingManager,
   Texture,
   AdditiveBlending,
+  Color,
 } from "three";
 
 import vertexShader from "./shaders/vertexShader.glsl";
@@ -75,7 +76,7 @@ function init(canvas: HTMLCanvasElement) {
   renderer.setSize(width, height, false);
   renderer.setPixelRatio(world.sizes.pixelRatio);
 
-  _createFireworks(100, new Vector3(), 0.5, texture[7], 1);
+  _createFireworks(100, new Vector3(), 0.5, texture[7], 1, new Color(1, 1, 0));
 
   _tick(renderer, camera);
 
@@ -94,6 +95,7 @@ function _createFireworks(
   size: number,
   texture: Texture,
   radius: number,
+  color: Color,
 ) {
   const positionsArray = new Float32Array(count * 3);
   const sizesArray = new Float32Array(count);
@@ -103,7 +105,7 @@ function _createFireworks(
 
     //球面座標系による位置の設定
     const spherical = new Spherical(
-      radius,
+      radius * (0.75 + Math.random() * 0.25), //0.75から1.0までのランダムな半径を設定
       Math.random() * Math.PI,
       Math.random() * Math.PI * 2,
     );
@@ -139,6 +141,7 @@ function _createFireworks(
         value: new Vector2(world.sizes.width, world.sizes.height),
       },
       uTexture: { value: texture },
+      uColor: { value: color },
     },
   });
 
