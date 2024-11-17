@@ -5,6 +5,7 @@ import {
   WebGLRenderer,
   BufferGeometry,
   Points,
+  Spherical,
   ShaderMaterial,
   Float32BufferAttribute,
   Vector3,
@@ -74,7 +75,7 @@ function init(canvas: HTMLCanvasElement) {
   renderer.setSize(width, height, false);
   renderer.setPixelRatio(world.sizes.pixelRatio);
 
-  _createFireworks(100, new Vector3(), 0.5, texture[7]);
+  _createFireworks(100, new Vector3(), 0.5, texture[7], 1);
 
   _tick(renderer, camera);
 
@@ -92,6 +93,7 @@ function _createFireworks(
   position: Vector3,
   size: number,
   texture: Texture,
+  radius: number,
 ) {
   const positionsArray = new Float32Array(count * 3);
   const sizesArray = new Float32Array(count);
@@ -99,9 +101,18 @@ function _createFireworks(
   for (let i = 0; i < count; i++) {
     const i3 = i * 3;
 
-    positionsArray[i3] = Math.random() - 0.5;
-    positionsArray[i3 + 1] = Math.random() - 0.5;
-    positionsArray[i3 + 2] = Math.random() - 0.5;
+    //球面座標系による位置の設定
+    const spherical = new Spherical(
+      radius,
+      Math.random() * Math.PI,
+      Math.random() * Math.PI * 2,
+    );
+    const position = new Vector3();
+    position.setFromSpherical(spherical);
+
+    positionsArray[i3] = position.x;
+    positionsArray[i3 + 1] = position.y;
+    positionsArray[i3 + 2] = position.z;
 
     sizesArray[i] = Math.random();
   }
@@ -113,7 +124,7 @@ function _createFireworks(
   );
   geometry.setAttribute("aSize", new Float32BufferAttribute(sizesArray, 1));
 
-  texture.flipY = false; //これをやらないとテクスチャの上下を反転する
+  texture.flipY = false; //これをやらないとテクスチャの上下が反転する
 
   const material = new ShaderMaterial({
     wireframe: true,
