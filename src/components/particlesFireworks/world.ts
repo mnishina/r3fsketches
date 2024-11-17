@@ -17,6 +17,8 @@ import {
   Color,
 } from "three";
 
+import gsap from "gsap";
+
 import vertexShader from "./shaders/vertexShader.glsl";
 import fragmentShader from "./shaders/fragmentShader.glsl";
 
@@ -31,6 +33,7 @@ interface World {
   scene: Scene;
   loadManager: LoadingManager;
   textureLoader: TextureLoader;
+  texture: Texture[];
   init: (canvas: HTMLCanvasElement) => void;
 }
 
@@ -43,6 +46,7 @@ const world: World = {
   scene: new Scene(),
   loadManager: new LoadingManager(),
   textureLoader: new TextureLoader(),
+  texture: [],
   init,
 };
 
@@ -55,7 +59,7 @@ function init(canvas: HTMLCanvasElement) {
   world.sizes.height = height * world.sizes.pixelRatio;
 
   world.textureLoader.manager = world.loadManager;
-  const texture = [
+  world.texture = [
     world.textureLoader.load("/particles/1.png"),
     world.textureLoader.load("/particles/2.png"),
     world.textureLoader.load("/particles/3.png"),
@@ -76,7 +80,14 @@ function init(canvas: HTMLCanvasElement) {
   renderer.setSize(width, height, false);
   renderer.setPixelRatio(world.sizes.pixelRatio);
 
-  _createFireworks(100, new Vector3(), 0.5, texture[7], 1, new Color(1, 1, 0));
+  _createFireworks(
+    100,
+    new Vector3(),
+    0.5,
+    world.texture[7],
+    1,
+    new Color(1, 1, 0),
+  );
 
   _tick(renderer, camera);
 
@@ -142,12 +153,41 @@ function _createFireworks(
       },
       uTexture: { value: texture },
       uColor: { value: color },
+      uProgress: { value: 0 },
     },
   });
 
   const firework = new Points(geometry, material);
   firework.position.copy(position); //花火の出現位置を設定するために設定する
   world.scene.add(firework);
+
+  //destroy
+  const destroy = () => {
+    console.log("destroy");
+
+    world.scene.remove(firework);
+    material.dispose();
+    geometry.dispose();
+  };
+
+  //animate
+  gsap.to(material.uniforms.uProgress, {
+    value: 1,
+    duration: 3,
+    ease: "linear",
+    onComplete: destroy,
+  });
 }
+
+window.addEventListener("click", () => {
+  _createFireworks(
+    100,
+    new Vector3(),
+    0.5,
+    world.texture[7],
+    1,
+    new Color(1, 1, 0),
+  );
+});
 
 export default world;
