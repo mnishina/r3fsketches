@@ -52,12 +52,16 @@ export const pagesData = [
     url: "/particlesBasic/",
   },
   {
-    title: "Particles Gallaxy",
-    url: "/particlesGallaxy/",
+    title: "Particles Galaxy",
+    url: "/particlesGalaxy/",
   },
   {
-    title: "Particles Gallaxy Shader",
-    url: "/particlesGallaxyShader/",
+    title: "Particles Galaxy Shader",
+    url: "/particlesGalaxyShader/",
+  },
+  {
+    title: "Particles Fireworks",
+    url: "/particlesFireworks/",
   },
   {
     title: "Shader Lighting",
