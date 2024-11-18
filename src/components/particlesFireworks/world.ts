@@ -58,7 +58,18 @@ function init(canvas: HTMLCanvasElement) {
   world.sizes.width = width * world.sizes.pixelRatio;
   world.sizes.height = height * world.sizes.pixelRatio;
 
+  //camera
+  const camera = new PerspectiveCamera(25, width / height, 0.1, 100);
+  camera.position.set(1.5, 0, 6);
+  world.scene.add(camera);
+
+  //renderer
+  const renderer = new WebGLRenderer({ canvas, antialias: true });
+  renderer.setSize(width, height, false);
+  renderer.setPixelRatio(world.sizes.pixelRatio);
+
   world.textureLoader.manager = world.loadManager;
+
   world.texture = [
     world.textureLoader.load("/particles/1.png"),
     world.textureLoader.load("/particles/2.png"),
@@ -70,28 +81,28 @@ function init(canvas: HTMLCanvasElement) {
     world.textureLoader.load("/particles/8.png"),
   ];
 
-  //camera
-  const camera = new PerspectiveCamera(25, width / height, 0.1, 100);
-  camera.position.set(1.5, 0, 6);
-  world.scene.add(camera);
+  world.loadManager.onError = (url) => {
+    console.log("error", url);
+  };
+  world.loadManager.onProgress = (url, loaded, total) => {
+    console.log("progress", url, loaded, total);
+  };
+  world.loadManager.onLoad = () => {
+    console.log("load");
 
-  //renderer
-  const renderer = new WebGLRenderer({ canvas, antialias: true });
-  renderer.setSize(width, height, false);
-  renderer.setPixelRatio(world.sizes.pixelRatio);
+    _createFireworks(
+      100,
+      new Vector3(),
+      0.5,
+      world.texture[7],
+      1,
+      new Color(1, 1, 0),
+    );
 
-  _createFireworks(
-    100,
-    new Vector3(),
-    0.5,
-    world.texture[7],
-    1,
-    new Color(1, 1, 0),
-  );
+    _tick(renderer, camera);
 
-  _tick(renderer, camera);
-
-  Util.setupOrbitControl(camera, canvas);
+    Util.setupOrbitControl(camera, canvas);
+  };
 }
 
 function _tick(renderer: WebGLRenderer, camera: PerspectiveCamera) {
@@ -110,6 +121,7 @@ function _createFireworks(
 ) {
   const positionsArray = new Float32Array(count * 3);
   const sizesArray = new Float32Array(count);
+  const timeMultipliersArray = new Float32Array(count);
 
   for (let i = 0; i < count; i++) {
     const i3 = i * 3;
@@ -128,6 +140,8 @@ function _createFireworks(
     positionsArray[i3 + 2] = position.z;
 
     sizesArray[i] = Math.random();
+
+    timeMultipliersArray[i] = 1 + Math.random(); //1をプラスして少し早くする。
   }
 
   const geometry = new BufferGeometry();
@@ -136,6 +150,10 @@ function _createFireworks(
     new Float32BufferAttribute(positionsArray, 3),
   );
   geometry.setAttribute("aSize", new Float32BufferAttribute(sizesArray, 1));
+  geometry.setAttribute(
+    "aTimeMultiplier",
+    new Float32BufferAttribute(timeMultipliersArray, 1),
+  );
 
   texture.flipY = false; //これをやらないとテクスチャの上下が反転する
 
