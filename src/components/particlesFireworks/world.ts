@@ -90,14 +90,7 @@ function init(canvas: HTMLCanvasElement) {
   world.loadManager.onLoad = () => {
     console.log("load");
 
-    _createFireworks(
-      100,
-      new Vector3(),
-      0.5,
-      world.texture[7],
-      1,
-      new Color(1, 1, 0),
-    );
+    _genarateRandomFireworks();
 
     _tick(renderer, camera);
 
@@ -197,15 +190,27 @@ function _createFireworks(
   });
 }
 
-window.addEventListener("click", () => {
-  _createFireworks(
-    100,
-    new Vector3(),
-    0.5,
-    world.texture[7],
-    1,
-    new Color(1, 1, 0),
+function _genarateRandomFireworks() {
+  const count = Math.round(400 + Math.random() * 100);
+  const position = new Vector3(
+    (Math.random() - 0.5) * 2,
+    Math.random(),
+    (Math.random() - 0.5) * 2,
   );
-});
+  const size = 0.1 + Math.random() * 0.1;
+  const texture =
+    world.texture[Math.floor(Math.random() * world.texture.length)];
+  const radius = 0.5 + Math.random();
+  const color = new Color();
+  color.setHSL(
+    Math.random(), // Hue: 0-1 (0=赤, 0.33=緑, 0.66=青, 1=赤)
+    1, // Saturation: 0-1 (0=グレー, 1=鮮やか)
+    0.7, // Lightness: 0-1 (0=黒, 0.5=通常, 1=白)
+  );
+
+  _createFireworks(count, position, size, texture, radius, color);
+}
+
+window.addEventListener("click", () => _genarateRandomFireworks());
 
 export default world;
