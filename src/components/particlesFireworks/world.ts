@@ -15,7 +15,9 @@ import {
   Texture,
   AdditiveBlending,
   Color,
+  MathUtils,
 } from "three";
+import { Sky } from "three/examples/jsm/objects/Sky.js";
 
 import gsap from "gsap";
 
@@ -90,8 +92,8 @@ function init(canvas: HTMLCanvasElement) {
   world.loadManager.onLoad = () => {
     console.log("load");
 
+    _createSky(renderer, camera);
     _genarateRandomFireworks();
-
     _tick(renderer, camera);
 
     Util.setupOrbitControl(camera, canvas);
@@ -175,6 +177,12 @@ function _createFireworks(
   //destroy
   const destroy = () => {
     console.log("destroy");
+    console.log("Creating fireworks with count:", count);
+    console.log("Buffer sizes:", {
+      positions: positionsArray.length,
+      sizes: sizesArray.length,
+      timeMultipliers: timeMultipliersArray.length,
+    });
 
     world.scene.remove(firework);
     material.dispose();
@@ -191,15 +199,15 @@ function _createFireworks(
 }
 
 function _genarateRandomFireworks() {
-  const count = Math.round(400 + Math.random() * 100);
+  const count = Math.round(100 + Math.random() * 50);
   const position = new Vector3(
     (Math.random() - 0.5) * 2,
     Math.random(),
     (Math.random() - 0.5) * 2,
   );
   const size = 0.1 + Math.random() * 0.1;
-  const texture =
-    world.texture[Math.floor(Math.random() * world.texture.length)];
+  const textureIndex = Math.floor(Math.random() * world.texture.length);
+  const texture = world.texture[textureIndex];
   const radius = 0.5 + Math.random();
   const color = new Color();
   color.setHSL(
@@ -208,9 +216,65 @@ function _genarateRandomFireworks() {
     0.7, // Lightness: 0-1 (0=黒, 0.5=通常, 1=白)
   );
 
+  console.log(textureIndex);
+
   _createFireworks(count, position, size, texture, radius, color);
 }
 
 window.addEventListener("click", () => _genarateRandomFireworks());
+
+function _createSky(renderer: WebGLRenderer, camera: PerspectiveCamera) {
+  const sky = new Sky();
+  sky.scale.setScalar(450000);
+  world.scene.add(sky);
+
+  const sun = new Vector3();
+
+  /// GUI
+
+  const effectController = {
+    turbidity: 10,
+    rayleigh: 3,
+    mieCoefficient: 0.005,
+    mieDirectionalG: 0.7,
+    elevation: 2,
+    azimuth: 180,
+    exposure: renderer.toneMappingExposure,
+  };
+
+  function guiChanged() {
+    const uniforms = sky.material.uniforms;
+    uniforms["turbidity"].value = effectController.turbidity;
+    uniforms["rayleigh"].value = effectController.rayleigh;
+    uniforms["mieCoefficient"].value = effectController.mieCoefficient;
+    uniforms["mieDirectionalG"].value = effectController.mieDirectionalG;
+
+    const phi = MathUtils.degToRad(90 - effectController.elevation);
+    const theta = MathUtils.degToRad(effectController.azimuth);
+
+    sun.setFromSphericalCoords(1, phi, theta);
+
+    uniforms["sunPosition"].value.copy(sun);
+
+    renderer.toneMappingExposure = effectController.exposure;
+    renderer.render(world.scene, camera);
+  }
+
+  // const gui = new GUI();
+
+  // gui.add(effectController, "turbidity", 0.0, 20.0, 0.1).onChange(guiChanged);
+  // gui.add(effectController, "rayleigh", 0.0, 4, 0.001).onChange(guiChanged);
+  // gui
+  //   .add(effectController, "mieCoefficient", 0.0, 0.1, 0.001)
+  //   .onChange(guiChanged);
+  // gui
+  //   .add(effectController, "mieDirectionalG", 0.0, 1, 0.001)
+  //   .onChange(guiChanged);
+  // gui.add(effectController, "elevation", 0, 90, 0.1).onChange(guiChanged);
+  // gui.add(effectController, "azimuth", -180, 180, 0.1).onChange(guiChanged);
+  // gui.add(effectController, "exposure", 0, 1, 0.0001).onChange(guiChanged);
+
+  guiChanged();
+}
 
 export default world;
