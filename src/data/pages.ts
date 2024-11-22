@@ -60,7 +60,7 @@ export const pagesData = [
     url: "/particlesGalaxyShader/",
   },
   {
-    title: "WIP）Particles Fireworks",
+    title: "Particles Fireworks",
     url: "/particlesFireworks/",
   },
   {
