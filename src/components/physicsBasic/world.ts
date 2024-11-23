@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import Utils from "../Utils/index";
 
 interface World {
   init: (canvas: HTMLCanvasElement) => void;
@@ -37,13 +38,15 @@ function init(canvas: HTMLCanvasElement) {
     0.1,
     1000,
   );
-  camera.position.z = 5;
+  camera.position.set(0, 0.1, 15);
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setSize(world.numbers.canvasWidth, world.numbers.canvasHeight);
 
   _tick(renderer, world.scene, camera);
   _createMesh();
+
+  Utils.setupOrbitControl(camera, canvas);
 }
 
 function _tick(
@@ -57,11 +60,19 @@ function _tick(
 }
 
 function _createMesh() {
-  const mesh = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1, 10, 10, 10),
+  const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(10, 10),
+    new THREE.MeshBasicMaterial({ color: 0xcccccc }),
+  );
+  ground.rotation.x = -Math.PI / 2;
+  world.scene.add(ground);
+
+  const sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(1, 10),
     new THREE.MeshBasicMaterial({ wireframe: true }),
   );
-  world.scene.add(mesh);
+  sphere.position.set(0, 1, 0);
+  world.scene.add(sphere);
 }
 
 export default world;
