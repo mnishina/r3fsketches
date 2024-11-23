@@ -71,6 +71,10 @@ export const pagesData = [
     title: "Shadow Test",
     url: "/shadowTest/",
   },
+  {
+    title: "Physics Basic",
+    url: "/physicsBasic/",
+  },
 ];
 
 interface PageData {
