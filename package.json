@@ -19,6 +19,7 @@
     "@types/react-dom": "^18.3.1",
     "@types/three": "^0.169.0",
     "astro": "^4.16.6",
+    "cannon-es": "^0.20.0",
     "gsap": "^3.12.5",
     "lenis": "^1.1.14",
     "react": "^18.3.1",
