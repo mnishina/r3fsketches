@@ -16,7 +16,7 @@ interface Page {
   scene: THREE.Scene;
   o: {
     three: {
-      ground: THREE.Mesh | undefined;
+      floor: THREE.Mesh | undefined;
       sphere: THREE.Mesh | undefined;
     };
     physics: {
@@ -39,7 +39,7 @@ const page: Page = {
   scene: new THREE.Scene(),
   o: {
     three: {
-      ground: undefined,
+      floor: undefined,
       sphere: undefined,
     },
     physics: {
@@ -99,6 +99,19 @@ function _physicsWorld() {
   const world = new CANNON.World();
   world.gravity.set(0, -9.82, 0); //地球の重力
 
+  //materials
+  const defaultMaterial = new CANNON.Material("default");
+  const defaultContactMaterial = new CANNON.ContactMaterial(
+    defaultMaterial,
+    defaultMaterial,
+    {
+      friction: 0.1,
+      restitution: 0.7,
+    },
+  );
+  world.addContactMaterial(defaultContactMaterial);
+  world.defaultContactMaterial = defaultContactMaterial;
+
   //Sphere
   const sphereShape = new CANNON.Sphere(0.5);
   const sphereBody = new CANNON.Body({
@@ -108,17 +121,28 @@ function _physicsWorld() {
   });
   world.addBody(sphereBody);
 
+  //floor
+  const floorShape = new CANNON.Plane();
+  const floorBody = new CANNON.Body();
+  floorBody.mass = 0;
+  floorBody.addShape(floorShape);
+  world.addBody(floorBody);
+  floorBody.quaternion.setFromAxisAngle(
+    new CANNON.Vec3(-1, 0, 0),
+    Math.PI * 0.5,
+  );
+
   page.o.physics.world = world;
   page.o.physics.sphereBody = sphereBody;
 }
 
 function _createMesh() {
-  const ground = new THREE.Mesh(
+  const floor = new THREE.Mesh(
     new THREE.PlaneGeometry(10, 10),
     new THREE.MeshBasicMaterial({ color: 0xcccccc }),
   );
-  ground.rotation.x = -Math.PI / 2;
-  page.scene.add(ground);
+  floor.rotation.x = -Math.PI / 2;
+  page.scene.add(floor);
 
   const sphere = new THREE.Mesh(
     new THREE.SphereGeometry(0.5, 10),
@@ -127,7 +151,7 @@ function _createMesh() {
   sphere.position.set(0, 0.5, 0);
   page.scene.add(sphere);
 
-  page.o.three.ground = ground;
+  page.o.three.floor = floor;
   page.o.three.sphere = sphere;
 }
 
