@@ -1,5 +1,5 @@
-import World from "./world";
+import page from "./page";
 
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
 
-World.init(canvas);
+page.init(canvas);
