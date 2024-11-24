@@ -64,7 +64,7 @@ function init(canvas: HTMLCanvasElement) {
     0.1,
     1000,
   );
-  camera.position.set(5, 4, 2);
+  camera.position.set(-5, 2, 10);
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setSize(page.numbers.canvasWidth, page.numbers.canvasHeight);
@@ -87,6 +87,10 @@ function _tick(
   const deltaTime = elapsedTime - page.numbers.oldElapsedTime;
   page.numbers.oldElapsedTime = elapsedTime;
 
+  page.o.physics.sphereBody?.applyForce(
+    new CANNON.Vec3(-0.5, 0, 0),
+    page.o.physics.sphereBody.position,
+  );
   page.o.physics.world?.step(1 / 60, deltaTime, 3);
 
   page.o.three.sphere?.position.copy(page.o.physics.sphereBody!.position);
@@ -119,6 +123,10 @@ function _physicsWorld() {
     position: new CANNON.Vec3(0, 3, 0),
     shape: sphereShape,
   });
+  sphereBody.applyLocalForce(
+    new CANNON.Vec3(150, 0, 0),
+    new CANNON.Vec3(0, 0, 0),
+  );
   world.addBody(sphereBody);
 
   //floor
