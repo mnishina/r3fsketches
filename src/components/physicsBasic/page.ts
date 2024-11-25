@@ -74,6 +74,7 @@ function init(canvas: HTMLCanvasElement) {
   _tick(renderer, page.scene, camera);
 
   Utils.setupOrbitControl(camera, canvas);
+  Utils.setupGUI();
 }
 
 function _tick(
