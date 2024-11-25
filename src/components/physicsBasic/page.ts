@@ -11,19 +11,29 @@ interface Page {
     aspectRatio: number | undefined;
     pixelRatio: number;
     oldElapsedTime: number;
+    position: {
+      x: number | undefined;
+      y: number | undefined;
+      z: number | undefined;
+    };
   };
   clock: THREE.Clock;
   scene: THREE.Scene;
   o: {
     three: {
       floor: THREE.Mesh | undefined;
-      sphere: THREE.Mesh | undefined;
+      // sphere: THREE.Mesh | undefined;
     };
     physics: {
       world: CANNON.World | undefined;
-      sphereBody: CANNON.Body | undefined;
+      material: CANNON.Material | undefined;
+      // sphereBody: CANNON.Body | undefined;
     };
   };
+  objectToUpdate: {
+    mesh: THREE.Mesh;
+    body: CANNON.Body;
+  }[];
 }
 
 const page: Page = {
@@ -34,19 +44,26 @@ const page: Page = {
     aspectRatio: undefined,
     pixelRatio: Math.min(window.devicePixelRatio, 2),
     oldElapsedTime: 0,
+    position: {
+      x: undefined,
+      y: undefined,
+      z: undefined,
+    },
   },
   clock: new THREE.Clock(),
   scene: new THREE.Scene(),
   o: {
     three: {
       floor: undefined,
-      sphere: undefined,
+      // sphere: undefined,
     },
     physics: {
       world: undefined,
-      sphereBody: undefined,
+      material: undefined,
+      // sphereBody: undefined,
     },
   },
+  objectToUpdate: [],
 };
 
 function init(canvas: HTMLCanvasElement) {
@@ -64,17 +81,21 @@ function init(canvas: HTMLCanvasElement) {
     0.1,
     1000,
   );
-  camera.position.set(-5, 2, 10);
+  camera.position.set(-5, 4, 8);
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setSize(page.numbers.canvasWidth, page.numbers.canvasHeight);
 
   _physicsWorld();
   _createMesh();
+
+  _createSphere(0.5, { x: 0, y: 3, z: 0 });
+
   _tick(renderer, page.scene, camera);
 
   Utils.setupOrbitControl(camera, canvas);
-  Utils.setupGUI();
+
+  _debug();
 }
 
 function _tick(
@@ -95,6 +116,10 @@ function _tick(
   page.o.physics.world?.step(1 / 60, deltaTime, 3);
 
   // page.o.three.sphere?.position.copy(page.o.physics.sphereBody!.position);
+
+  for (const object of page.objectToUpdate) {
+    object.mesh.position.copy(object.body.position);
+  }
 
   renderer.render(scene, camera);
 }
@@ -142,6 +167,7 @@ function _physicsWorld() {
   );
 
   page.o.physics.world = world;
+  page.o.physics.material = defaultMaterial;
   // page.o.physics.sphereBody = sphereBody;
 }
 
@@ -164,4 +190,50 @@ function _createMesh() {
   // page.o.three.sphere = sphere;
 }
 
+function _createSphere(
+  radius: number,
+  position: { x: number; y: number; z: number },
+) {
+  const mesh = new THREE.Mesh(
+    new THREE.SphereGeometry(radius, 20, 20),
+    new THREE.MeshBasicMaterial(),
+  );
+  mesh.position.copy(position);
+  page.scene.add(mesh);
+
+  const shape = new CANNON.Sphere(radius);
+  const body = new CANNON.Body({
+    mass: 1,
+    position: new CANNON.Vec3(position.x, position.y, position.z),
+    shape: shape,
+    material: page.o.physics.material,
+  });
+  // body.position.copy(position);
+  page.o.physics.world?.addBody(body);
+
+  page.objectToUpdate.push({
+    mesh: mesh,
+    body: body,
+  });
+}
+
+interface DebugObject {
+  createSphere: () => void;
+}
+
+function _debug() {
+  Utils.setupGUI();
+
+  const debugObject: DebugObject = {
+    createSphere: () => {
+      _createSphere(Math.random() * 0.5, {
+        x: (Math.random() - 0.5) * 3,
+        y: 3,
+        z: (Math.random() - 0.5) * 3,
+      });
+    },
+  };
+
+  Utils.gui?.add(debugObject, "createSphere");
+}
 export default page;
