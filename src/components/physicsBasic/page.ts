@@ -88,13 +88,13 @@ function _tick(
   const deltaTime = elapsedTime - page.numbers.oldElapsedTime;
   page.numbers.oldElapsedTime = elapsedTime;
 
-  page.o.physics.sphereBody?.applyForce(
-    new CANNON.Vec3(-0.5, 0, 0),
-    page.o.physics.sphereBody.position,
-  );
+  // page.o.physics.sphereBody?.applyForce(
+  //   new CANNON.Vec3(-0.5, 0, 0),
+  //   page.o.physics.sphereBody.position,
+  // );
   page.o.physics.world?.step(1 / 60, deltaTime, 3);
 
-  page.o.three.sphere?.position.copy(page.o.physics.sphereBody!.position);
+  // page.o.three.sphere?.position.copy(page.o.physics.sphereBody!.position);
 
   renderer.render(scene, camera);
 }
@@ -117,18 +117,18 @@ function _physicsWorld() {
   world.addContactMaterial(defaultContactMaterial);
   world.defaultContactMaterial = defaultContactMaterial;
 
-  //Sphere
-  const sphereShape = new CANNON.Sphere(0.5);
-  const sphereBody = new CANNON.Body({
-    mass: 1,
-    position: new CANNON.Vec3(0, 3, 0),
-    shape: sphereShape,
-  });
-  sphereBody.applyLocalForce(
-    new CANNON.Vec3(150, 0, 0),
-    new CANNON.Vec3(0, 0, 0),
-  );
-  world.addBody(sphereBody);
+  // //Sphere
+  // const sphereShape = new CANNON.Sphere(0.5);
+  // const sphereBody = new CANNON.Body({
+  //   mass: 1,
+  //   position: new CANNON.Vec3(0, 3, 0),
+  //   shape: sphereShape,
+  // });
+  // sphereBody.applyLocalForce(
+  //   new CANNON.Vec3(150, 0, 0),
+  //   new CANNON.Vec3(0, 0, 0),
+  // );
+  // world.addBody(sphereBody);
 
   //floor
   const floorShape = new CANNON.Plane();
@@ -142,7 +142,7 @@ function _physicsWorld() {
   );
 
   page.o.physics.world = world;
-  page.o.physics.sphereBody = sphereBody;
+  // page.o.physics.sphereBody = sphereBody;
 }
 
 function _createMesh() {
@@ -153,15 +153,15 @@ function _createMesh() {
   floor.rotation.x = -Math.PI / 2;
   page.scene.add(floor);
 
-  const sphere = new THREE.Mesh(
-    new THREE.SphereGeometry(0.5, 10),
-    new THREE.MeshBasicMaterial({ wireframe: true }),
-  );
-  sphere.position.set(0, 0.5, 0);
-  page.scene.add(sphere);
+  // const sphere = new THREE.Mesh(
+  //   new THREE.SphereGeometry(0.5, 10),
+  //   new THREE.MeshBasicMaterial({ wireframe: true }),
+  // );
+  // sphere.position.set(0, 0.5, 0);
+  // page.scene.add(sphere);
 
   page.o.three.floor = floor;
-  page.o.three.sphere = sphere;
+  // page.o.three.sphere = sphere;
 }
 
 export default page;
