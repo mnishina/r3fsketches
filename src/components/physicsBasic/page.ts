@@ -127,6 +127,7 @@ function _tick(
 
   for (const object of page.objectToUpdate) {
     object.mesh.position.copy(object.body.position);
+    object.mesh.quaternion.copy(object.body.quaternion);
   }
 
   renderer.render(scene, camera);
