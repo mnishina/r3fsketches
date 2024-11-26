@@ -36,6 +36,8 @@ interface Page {
   }[];
   sphereGeometry: THREE.SphereGeometry;
   sphereMaterial: THREE.MeshBasicMaterial;
+  boxGeometry: THREE.BoxGeometry;
+  boxMaterial: THREE.MeshBasicMaterial;
 }
 
 const page: Page = {
@@ -68,6 +70,8 @@ const page: Page = {
   objectToUpdate: [],
   sphereGeometry: new THREE.SphereGeometry(1, 20, 20),
   sphereMaterial: new THREE.MeshBasicMaterial(),
+  boxGeometry: new THREE.BoxGeometry(1, 1, 1, 10, 10),
+  boxMaterial: new THREE.MeshBasicMaterial(),
 };
 
 function init(canvas: HTMLCanvasElement) {
@@ -220,8 +224,38 @@ function _createSphere(
   });
 }
 
+function _createBox(
+  width: number,
+  height: number,
+  depth: number,
+  position: { x: number; y: number; z: number },
+) {
+  const mesh = new THREE.Mesh(page.boxGeometry, page.boxMaterial);
+  mesh.scale.set(width, height, depth);
+  mesh.position.copy(position);
+  page.scene.add(mesh);
+
+  const shape = new CANNON.Box(
+    new CANNON.Vec3(width * 0.5, height * 0.5, depth * 0.5),
+  );
+  const body = new CANNON.Body({
+    mass: 1,
+    position: new CANNON.Vec3(position.x, position.y, position.z),
+    shape: shape,
+    material: page.o.physics.material,
+  });
+  page.o.physics.world?.addBody(body);
+
+  page.objectToUpdate.push({
+    mesh: mesh,
+    body: body,
+  });
+}
+
+// debug
 interface DebugObject {
   createSphere: () => void;
+  createBox: () => void;
 }
 
 function _debug() {
@@ -235,8 +269,17 @@ function _debug() {
         z: (Math.random() - 0.5) * 3,
       });
     },
+
+    createBox: () => {
+      _createBox(Math.random(), Math.random(), Math.random(), {
+        x: (Math.random() - 0.5) * 3,
+        y: 3,
+        z: (Math.random() - 0.5) * 3,
+      });
+    },
   };
 
   Utils.gui?.add(debugObject, "createSphere");
+  Utils.gui?.add(debugObject, "createBox");
 }
 export default page;
