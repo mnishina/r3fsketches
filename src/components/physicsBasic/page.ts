@@ -34,6 +34,8 @@ interface Page {
     mesh: THREE.Mesh;
     body: CANNON.Body;
   }[];
+  sphereGeometry: THREE.SphereGeometry;
+  sphereMaterial: THREE.MeshBasicMaterial;
 }
 
 const page: Page = {
@@ -64,6 +66,8 @@ const page: Page = {
     },
   },
   objectToUpdate: [],
+  sphereGeometry: new THREE.SphereGeometry(1, 20, 20),
+  sphereMaterial: new THREE.MeshBasicMaterial(),
 };
 
 function init(canvas: HTMLCanvasElement) {
@@ -194,10 +198,9 @@ function _createSphere(
   radius: number,
   position: { x: number; y: number; z: number },
 ) {
-  const mesh = new THREE.Mesh(
-    new THREE.SphereGeometry(radius, 20, 20),
-    new THREE.MeshBasicMaterial(),
-  );
+  const mesh = new THREE.Mesh(page.sphereGeometry, page.sphereMaterial);
+  mesh.scale.setScalar(radius);
+  // mesh.scale.set(radius, radius, radius);
   mesh.position.copy(position);
   page.scene.add(mesh);
 
