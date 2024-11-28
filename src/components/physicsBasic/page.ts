@@ -18,6 +18,7 @@ interface Page {
     };
   };
   clock: THREE.Clock;
+  hitSound: HTMLAudioElement;
   scene: THREE.Scene;
   o: {
     three: {
@@ -55,6 +56,7 @@ const page: Page = {
     },
   },
   clock: new THREE.Clock(),
+  hitSound: new Audio("/sounds/hit.mp3"),
   scene: new THREE.Scene(),
   o: {
     three: {
@@ -218,7 +220,7 @@ function _createSphere(
     shape: shape,
     material: page.o.physics.material,
   });
-  // body.position.copy(position);
+  body.addEventListener("collide", _playHitSound);
   page.o.physics.world?.addBody(body);
 
   page.objectToUpdate.push({
@@ -247,12 +249,25 @@ function _createBox(
     shape: shape,
     material: page.o.physics.material,
   });
+  body.addEventListener("collide", _playHitSound);
   page.o.physics.world?.addBody(body);
 
   page.objectToUpdate.push({
     mesh: mesh,
     body: body,
   });
+}
+
+function _playHitSound(collision: {
+  contact: { getImpactVelocityAlongNormal: () => number };
+}) {
+  const impactStrength = collision.contact.getImpactVelocityAlongNormal();
+
+  if (impactStrength > 1.5) {
+    page.hitSound.volume = Math.random();
+    page.hitSound.currentTime = 0;
+    page.hitSound.play();
+  }
 }
 
 // debug
