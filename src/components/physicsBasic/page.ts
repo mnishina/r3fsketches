@@ -18,6 +18,7 @@ interface Page {
     };
   };
   clock: THREE.Clock;
+  hitSound: HTMLAudioElement;
   scene: THREE.Scene;
   o: {
     three: {
@@ -55,6 +56,7 @@ const page: Page = {
     },
   },
   clock: new THREE.Clock(),
+  hitSound: new Audio("/sounds/hit.mp3"),
   scene: new THREE.Scene(),
   o: {
     three: {
@@ -136,6 +138,8 @@ function _tick(
 function _physicsWorld() {
   //world
   const world = new CANNON.World();
+  world.broadphase = new CANNON.SAPBroadphase(world);
+  world.allowSleep = true;
   world.gravity.set(0, -9.82, 0); //地球の重力
 
   //materials
@@ -216,7 +220,7 @@ function _createSphere(
     shape: shape,
     material: page.o.physics.material,
   });
-  // body.position.copy(position);
+  body.addEventListener("collide", _playHitSound);
   page.o.physics.world?.addBody(body);
 
   page.objectToUpdate.push({
@@ -245,6 +249,7 @@ function _createBox(
     shape: shape,
     material: page.o.physics.material,
   });
+  body.addEventListener("collide", _playHitSound);
   page.o.physics.world?.addBody(body);
 
   page.objectToUpdate.push({
@@ -253,10 +258,39 @@ function _createBox(
   });
 }
 
+function _reset() {
+  console.log("reset", page.objectToUpdate);
+
+  for (const object of page.objectToUpdate) {
+    //remove body
+    page.o.physics.world?.removeEventListener("collide", _playHitSound);
+    page.o.physics.world?.removeBody(object.body);
+
+    //remove mesh
+    page.scene.remove(object.mesh);
+  }
+
+  // remove from array
+  page.objectToUpdate.splice(0, page.objectToUpdate.length);
+}
+
+function _playHitSound(collision: {
+  contact: { getImpactVelocityAlongNormal: () => number };
+}) {
+  const impactStrength = collision.contact.getImpactVelocityAlongNormal();
+
+  if (impactStrength > 1.5) {
+    page.hitSound.volume = Math.random();
+    page.hitSound.currentTime = 0;
+    page.hitSound.play();
+  }
+}
+
 // debug
 interface DebugObject {
   createSphere: () => void;
   createBox: () => void;
+  reset: () => void;
 }
 
 function _debug() {
@@ -278,9 +312,13 @@ function _debug() {
         z: (Math.random() - 0.5) * 3,
       });
     },
+    reset: () => {
+      _reset();
+    },
   };
 
   Utils.gui?.add(debugObject, "createSphere");
   Utils.gui?.add(debugObject, "createBox");
+  Utils.gui?.add(debugObject, "reset");
 }
 export default page;
