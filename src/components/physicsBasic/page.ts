@@ -258,6 +258,22 @@ function _createBox(
   });
 }
 
+function _reset() {
+  console.log("reset", page.objectToUpdate);
+
+  for (const object of page.objectToUpdate) {
+    //remove body
+    page.o.physics.world?.removeEventListener("collide", _playHitSound);
+    page.o.physics.world?.removeBody(object.body);
+
+    //remove mesh
+    page.scene.remove(object.mesh);
+  }
+
+  // remove from array
+  page.objectToUpdate.splice(0, page.objectToUpdate.length);
+}
+
 function _playHitSound(collision: {
   contact: { getImpactVelocityAlongNormal: () => number };
 }) {
@@ -274,6 +290,7 @@ function _playHitSound(collision: {
 interface DebugObject {
   createSphere: () => void;
   createBox: () => void;
+  reset: () => void;
 }
 
 function _debug() {
@@ -295,9 +312,13 @@ function _debug() {
         z: (Math.random() - 0.5) * 3,
       });
     },
+    reset: () => {
+      _reset();
+    },
   };
 
   Utils.gui?.add(debugObject, "createSphere");
   Utils.gui?.add(debugObject, "createBox");
+  Utils.gui?.add(debugObject, "reset");
 }
 export default page;
