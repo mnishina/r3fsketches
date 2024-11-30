@@ -75,6 +75,10 @@ export const pagesData = [
     title: "Physics Basic",
     url: "/physicsBasic/",
   },
+  {
+    title: "Motion Hover Effect",
+    url: "/motionHoverEffect/",
+  },
 ];
 
 interface PageData {
