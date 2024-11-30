@@ -1,5 +1,8 @@
 import * as THREE from "three";
 
+import vertexShader from "./shaders/vertexShader.glsl";
+import fragmentShader from "./shaders/fragmentShader.glsl";
+
 interface Page {
   numbers: {
     canvasWidth: number | undefined;
@@ -62,8 +65,15 @@ function init(canvas: HTMLCanvasElement) {
 
 function _createMesh() {
   const mesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(),
-    new THREE.MeshBasicMaterial({ wireframe: true }),
+    new THREE.PlaneGeometry(1, 1, 32, 32),
+    new THREE.ShaderMaterial({
+      wireframe: true,
+      vertexShader,
+      fragmentShader,
+      uniforms: {
+        uAlpha: { value: 0 },
+      },
+    }),
   );
   page.scene.add(mesh);
 }
