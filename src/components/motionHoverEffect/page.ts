@@ -35,7 +35,7 @@ const page: Page = {
   init,
 };
 
-function init(canvas: HTMLCanvasElement) {
+async function init(canvas: HTMLCanvasElement) {
   console.log("page init");
 
   const canvasRect = canvas.getBoundingClientRect();
@@ -59,6 +59,8 @@ function init(canvas: HTMLCanvasElement) {
   });
   renderer.setSize(page.numbers.canvasWidth, page.numbers.canvasHeight, false);
 
+  await _loadTexture();
+
   _createMesh();
 
   _tick(renderer, camera);
@@ -68,7 +70,32 @@ function init(canvas: HTMLCanvasElement) {
   });
 }
 
+async function _loadTexture() {
+  console.log("_loadTexture");
+
+  return new Promise((resolve, reject) => {
+    const loader = new THREE.TextureLoader();
+
+    loader.load(
+      "/bnw001.png",
+      (texture) => {
+        // console.log(texture);
+        resolve({ texture });
+      },
+      (e) => {
+        console.log(e);
+      },
+      (err) => {
+        console.log(err);
+        reject(err);
+      },
+    );
+  });
+}
+
 function _createMesh() {
+  console.log("_createMesh");
+
   const mesh = new THREE.Mesh(
     new THREE.PlaneGeometry(1, 1, 32, 32),
     new THREE.ShaderMaterial({
