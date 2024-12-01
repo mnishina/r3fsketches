@@ -10,6 +10,20 @@ const title = getPageTitle(pagesData, Astro.url.pathname);
 </script>
 
 <Layout title={title}>
+  <ul>
+    <li>
+      <div>bnw001</div>
+      <img src="/bnw001.png" alt="" data-webGLTexture />
+    </li>
+    <li>
+      <div>bnw001</div>
+      <img src="/bnw002.png" alt="" data-webGLTexture />
+    </li>
+    <li>
+      <div>bnw001</div>
+      <img src="/bnw003.png" alt="" data-webGLTexture />
+    </li>
+  </ul>
   <canvas id="canvas"></canvas>
 </Layout>
 
@@ -20,5 +34,6 @@ const title = getPageTitle(pagesData, Astro.url.pathname);
     position: fixed;
     left: 0;
     top: 0;
+    background-color: transparent;
   }
 </style>
