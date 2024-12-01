@@ -27,7 +27,7 @@ const page: Page = {
     aspectRatio: undefined,
     pixelRatio: Math.min(window.devicePixelRatio, 2),
     camera: {
-      fov: 75,
+      fov: undefined,
       near: 0.1,
       far: 1000,
     },
@@ -40,11 +40,12 @@ const page: Page = {
 async function init(canvas: HTMLCanvasElement, textures: NodeListOf<Element>) {
   console.log("page init");
 
-  const canvasRect = canvas.getBoundingClientRect();
-  const { width, height } = canvasRect;
+  const { width, height, aspectRatio } = _getViewPortSize(canvas);
+  const fov = _getPixelFOV(height, page.numbers.camera.far);
   page.numbers.canvasWidth = width;
   page.numbers.canvasHeight = height;
-  page.numbers.aspectRatio = width / height;
+  page.numbers.aspectRatio = aspectRatio;
+  page.numbers.camera.fov = fov;
 
   const camera = new THREE.PerspectiveCamera(
     page.numbers.camera.fov,
@@ -52,7 +53,7 @@ async function init(canvas: HTMLCanvasElement, textures: NodeListOf<Element>) {
     page.numbers.camera.near,
     page.numbers.camera.far,
   );
-  camera.position.set(0, 0, 5);
+  camera.position.set(0, 0, page.numbers.camera.far);
 
   const renderer = new THREE.WebGLRenderer({
     canvas,
@@ -69,6 +70,20 @@ async function init(canvas: HTMLCanvasElement, textures: NodeListOf<Element>) {
 
   window.addEventListener("resize", () => {
     _onResize(canvas, renderer, camera);
+  });
+
+  window.addEventListener("mousemove", (event) => {
+    if (
+      page.numbers.canvasWidth === undefined ||
+      page.numbers.canvasHeight === undefined
+    ) {
+      const { width, height } = _getViewPortSize(canvas);
+
+      page.numbers.canvasWidth = width;
+      page.numbers.canvasHeight = height;
+    }
+
+    _onMouseMove(event, page.numbers.canvasWidth, page.numbers.canvasHeight);
   });
 }
 
@@ -109,7 +124,9 @@ async function _loadTexture(textures: NodeListOf<Element>) {
 function _createMesh() {
   console.log("_createMesh");
 
-  page.textureArray.forEach((tex: THREE.TextureLoader) => {
+  page.textureArray.forEach((tex: THREE.Texture) => {
+    const { naturalWidth, naturalHeight } = tex.source.data;
+
     const geometry = new THREE.PlaneGeometry(1, 1, 32, 32);
     const material = new THREE.ShaderMaterial({
       // wireframe: true,
@@ -121,6 +138,7 @@ function _createMesh() {
       },
     });
     const mesh = new THREE.Mesh(geometry, material);
+    mesh.scale.set(naturalWidth, naturalHeight, 0);
     page.scene.add(mesh);
   });
 }
@@ -143,27 +161,43 @@ function _onResize(
   timeoutID = setTimeout(() => {
     if (timeoutID) clearTimeout(timeoutID);
 
-    const { width, height } = _getViewPortSize(canvas);
+    const { width, height, aspectRatio } = _getViewPortSize(canvas);
+    const fov = _getPixelFOV(height, page.numbers.camera.far);
+    renderer.setSize(width, height, false);
+
+    camera.aspect = aspectRatio;
+    camera.fov = fov;
+    camera.updateProjectionMatrix();
+
     page.numbers.canvasWidth = width;
     page.numbers.canvasHeight = height;
-    page.numbers.aspectRatio = width / height;
-
-    renderer.setSize(
-      page.numbers.canvasWidth,
-      page.numbers.canvasHeight,
-      false,
-    );
-
-    camera.aspect = page.numbers.aspectRatio;
-    camera.updateProjectionMatrix();
+    page.numbers.aspectRatio = aspectRatio;
+    page.numbers.camera.fov = fov;
   }, 500);
+}
+
+function _onMouseMove(
+  event: MouseEvent,
+  canvasWidth: number,
+  canvasHeight: number,
+) {
+  const mouseX = (event.clientX / canvasWidth) * 2 - 1;
+  const mouseY = -(event.clientY / canvasHeight) * 2 + 1;
 }
 
 function _getViewPortSize(canvas: HTMLCanvasElement) {
   const canvasRect = canvas.getBoundingClientRect();
   const { width, height } = canvasRect;
+  const aspectRatio = width / height;
 
-  return { width, height };
+  return { width, height, aspectRatio };
+}
+
+function _getPixelFOV(height: number, cameraFar: number) {
+  const fovRadian = 2 * Math.atan(height / 2 / cameraFar);
+  const fov = (180 * fovRadian) / Math.PI;
+
+  return fov;
 }
 
 export default page;
