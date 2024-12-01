@@ -55,12 +55,17 @@ function init(canvas: HTMLCanvasElement) {
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,
+    alpha: true,
   });
-  renderer.setSize(page.numbers.canvasWidth, page.numbers.canvasHeight);
+  renderer.setSize(page.numbers.canvasWidth, page.numbers.canvasHeight, false);
 
   _createMesh();
 
   _tick(renderer, camera);
+
+  window.addEventListener("resize", () => {
+    _onResize(canvas, renderer, camera);
+  });
 }
 
 function _createMesh() {
@@ -84,6 +89,39 @@ function _tick(renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera) {
   });
 
   renderer.render(page.scene, camera);
+}
+
+function _onResize(
+  canvas: HTMLCanvasElement,
+  renderer: THREE.WebGLRenderer,
+  camera: THREE.PerspectiveCamera,
+) {
+  let timeoutID: number | undefined = undefined;
+
+  timeoutID = setTimeout(() => {
+    if (timeoutID) clearTimeout(timeoutID);
+
+    const { width, height } = _getViewPortSize(canvas);
+    page.numbers.canvasWidth = width;
+    page.numbers.canvasHeight = height;
+    page.numbers.aspectRatio = width / height;
+
+    renderer.setSize(
+      page.numbers.canvasWidth,
+      page.numbers.canvasHeight,
+      false,
+    );
+
+    camera.aspect = page.numbers.aspectRatio;
+    camera.updateProjectionMatrix();
+  }, 500);
+}
+
+function _getViewPortSize(canvas: HTMLCanvasElement) {
+  const canvasRect = canvas.getBoundingClientRect();
+  const { width, height } = canvasRect;
+
+  return { width, height };
 }
 
 export default page;
