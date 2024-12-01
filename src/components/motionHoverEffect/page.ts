@@ -16,7 +16,8 @@ interface Page {
     };
   };
   scene: THREE.Scene;
-  init: (canvas: HTMLCanvasElement) => void;
+  textureArray: any;
+  init: (canvas: HTMLCanvasElement, textures: NodeListOf<Element>) => void;
 }
 
 const page: Page = {
@@ -32,10 +33,11 @@ const page: Page = {
     },
   },
   scene: new THREE.Scene(),
+  textureArray: [],
   init,
 };
 
-async function init(canvas: HTMLCanvasElement) {
+async function init(canvas: HTMLCanvasElement, textures: NodeListOf<Element>) {
   console.log("page init");
 
   const canvasRect = canvas.getBoundingClientRect();
@@ -59,7 +61,7 @@ async function init(canvas: HTMLCanvasElement) {
   });
   renderer.setSize(page.numbers.canvasWidth, page.numbers.canvasHeight, false);
 
-  await _loadTexture();
+  await _loadTexture(textures);
 
   _createMesh();
 
@@ -70,44 +72,57 @@ async function init(canvas: HTMLCanvasElement) {
   });
 }
 
-async function _loadTexture() {
+async function _loadTexture(textures: NodeListOf<Element>) {
   console.log("_loadTexture");
 
-  return new Promise((resolve, reject) => {
-    const loader = new THREE.TextureLoader();
+  const urls: string[] = [];
 
-    loader.load(
-      "/bnw001.png",
-      (texture) => {
-        // console.log(texture);
-        resolve({ texture });
-      },
-      (e) => {
-        console.log(e);
-      },
-      (err) => {
-        console.log(err);
-        reject(err);
-      },
-    );
+  Array.from(textures).forEach((texture, i) => {
+    const src = texture.getAttribute("src");
+    if (src) urls.push(src);
   });
+
+  //promisesの配列を作り、urlsをmapする
+  const promises = urls.map((url: string, i: number) => {
+    return new Promise((resolve, reject) => {
+      const loader = new THREE.TextureLoader();
+      loader.load(
+        url,
+        (texture) => {
+          page.textureArray.push(texture);
+          resolve(texture);
+        },
+        undefined,
+        (err) => {
+          reject(err);
+        },
+      );
+    });
+  });
+
+  // console.log(promises);
+
+  //このファンクションのreturnでpromisesの配列をPromise.allする
+  return Promise.all(promises);
 }
 
 function _createMesh() {
   console.log("_createMesh");
 
-  const mesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(1, 1, 32, 32),
-    new THREE.ShaderMaterial({
-      wireframe: true,
+  page.textureArray.forEach((tex: THREE.TextureLoader) => {
+    const geometry = new THREE.PlaneGeometry(1, 1, 32, 32);
+    const material = new THREE.ShaderMaterial({
+      // wireframe: true,
       vertexShader,
       fragmentShader,
       uniforms: {
+        uTex: { value: tex },
         uAlpha: { value: 0 },
       },
-    }),
-  );
-  page.scene.add(mesh);
+    });
+    const mesh = new THREE.Mesh(geometry, material);
+    page.scene.add(mesh);
+  });
 }
 
 function _tick(renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera) {
