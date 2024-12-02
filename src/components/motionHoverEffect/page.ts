@@ -15,9 +15,18 @@ interface Page {
       far: number;
     };
   };
+  $: {
+    ul: HTMLUListElement | undefined;
+    li: NodeListOf<HTMLLIElement> | undefined;
+  };
   scene: THREE.Scene;
   textureArray: any;
-  init: (canvas: HTMLCanvasElement, textures: NodeListOf<Element>) => void;
+  init: (
+    canvas: HTMLCanvasElement,
+    ul: HTMLUListElement,
+    li: NodeListOf<HTMLLIElement>,
+    textures: NodeListOf<Element>,
+  ) => void;
 }
 
 const page: Page = {
@@ -32,13 +41,25 @@ const page: Page = {
       far: 1000,
     },
   },
+  $: {
+    ul: undefined,
+    li: undefined,
+  },
   scene: new THREE.Scene(),
   textureArray: [],
   init,
 };
 
-async function init(canvas: HTMLCanvasElement, textures: NodeListOf<Element>) {
+async function init(
+  canvas: HTMLCanvasElement,
+  ul: HTMLUListElement,
+  li: NodeListOf<HTMLLIElement>,
+  textures: NodeListOf<Element>,
+) {
   console.log("page init");
+
+  page.$.ul = ul;
+  page.$.li = li;
 
   const { width, height, aspectRatio } = _getViewPortSize(canvas);
   const fov = _getPixelFOV(height, page.numbers.camera.far);
@@ -72,7 +93,7 @@ async function init(canvas: HTMLCanvasElement, textures: NodeListOf<Element>) {
     _onResize(canvas, renderer, camera);
   });
 
-  window.addEventListener("mousemove", (event) => {
+  page.$.ul.addEventListener("mousemove", (event) => {
     if (
       page.numbers.canvasWidth === undefined ||
       page.numbers.canvasHeight === undefined
@@ -84,6 +105,16 @@ async function init(canvas: HTMLCanvasElement, textures: NodeListOf<Element>) {
     }
 
     _onMouseMove(event, page.numbers.canvasWidth, page.numbers.canvasHeight);
+  });
+
+  page.$.ul.addEventListener("mouseleave", () => {
+    _onMouseLeave();
+  });
+
+  page.$.li.forEach((item) => {
+    item.addEventListener("mouseover", () => {
+      _onMouseOver();
+    });
   });
 }
 
@@ -183,6 +214,14 @@ function _onMouseMove(
 ) {
   const mouseX = (event.clientX / canvasWidth) * 2 - 1;
   const mouseY = -(event.clientY / canvasHeight) * 2 + 1;
+}
+
+function _onMouseLeave() {
+  console.log("mouseLeave");
+}
+
+function _onMouseOver() {
+  console.log("mouseover");
 }
 
 function _getViewPortSize(canvas: HTMLCanvasElement) {
