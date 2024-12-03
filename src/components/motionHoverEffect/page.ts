@@ -21,6 +21,11 @@ interface Page {
   };
   scene: THREE.Scene;
   textureArray: any;
+  items: {
+    element: Element | undefined;
+    img: HTMLImageElement | null;
+    index: number | undefined;
+  }[];
   init: (
     canvas: HTMLCanvasElement,
     ul: HTMLUListElement,
@@ -47,6 +52,13 @@ const page: Page = {
   },
   scene: new THREE.Scene(),
   textureArray: [],
+  items: [
+    {
+      element: undefined,
+      img: null,
+      index: undefined,
+    },
+  ],
   init,
 };
 
@@ -60,6 +72,8 @@ async function init(
 
   page.$.ul = ul;
   page.$.li = li;
+
+  page.items = _getItemElements();
 
   const { width, height, aspectRatio } = _getViewPortSize(canvas);
   const fov = _getPixelFOV(height, page.numbers.camera.far);
@@ -237,6 +251,16 @@ function _getPixelFOV(height: number, cameraFar: number) {
   const fov = (180 * fovRadian) / Math.PI;
 
   return fov;
+}
+
+function _getItemElements() {
+  const items = document.querySelectorAll(".link");
+
+  return [...items].map((item, index) => ({
+    element: item,
+    img: item.querySelector("img") || null,
+    index: index,
+  }));
 }
 
 export default page;
