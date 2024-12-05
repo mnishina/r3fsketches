@@ -20,17 +20,17 @@ interface Page {
     li: NodeListOf<HTMLLIElement> | undefined;
   };
   scene: THREE.Scene;
-  textureArray: any;
+  textureLoader: THREE.TextureLoader;
   items: {
     element: Element | undefined;
     img: HTMLImageElement | null;
     index: number | undefined;
   }[];
+  textures: THREE.Texture[];
   init: (
     canvas: HTMLCanvasElement,
     ul: HTMLUListElement,
     li: NodeListOf<HTMLLIElement>,
-    textures: NodeListOf<Element>,
   ) => void;
 }
 
@@ -51,7 +51,7 @@ const page: Page = {
     li: undefined,
   },
   scene: new THREE.Scene(),
-  textureArray: [],
+  textureLoader: new THREE.TextureLoader(),
   items: [
     {
       element: undefined,
@@ -59,6 +59,7 @@ const page: Page = {
       index: undefined,
     },
   ],
+  textures: [],
   init,
 };
 
@@ -66,14 +67,8 @@ async function init(
   canvas: HTMLCanvasElement,
   ul: HTMLUListElement,
   li: NodeListOf<HTMLLIElement>,
-  textures: NodeListOf<Element>,
 ) {
   console.log("page init");
-
-  page.$.ul = ul;
-  page.$.li = li;
-
-  page.items = _getItemElements();
 
   const { width, height, aspectRatio } = _getViewPortSize(canvas);
   const fov = _getPixelFOV(height, page.numbers.camera.far);
@@ -97,9 +92,15 @@ async function init(
   });
   renderer.setSize(page.numbers.canvasWidth, page.numbers.canvasHeight, false);
 
-  await _loadTexture(textures);
+  page.$.ul = ul;
+  page.$.li = li;
 
-  _createMesh();
+  page.items = _getItemElements();
+
+  await _loadTextureFromItems(page.items);
+  console.log(await _loadTextureFromItems(page.items));
+
+  _createMesh(page.textures);
 
   _tick(renderer, camera);
 
@@ -132,44 +133,44 @@ async function init(
   });
 }
 
-async function _loadTexture(textures: NodeListOf<Element>) {
-  console.log("_loadTexture");
+// async function _loadTexture(textures: NodeListOf<Element>) {
+//   console.log("_loadTexture");
 
-  const urls: string[] = [];
+//   const urls: string[] = [];
 
-  Array.from(textures).forEach((texture, i) => {
-    const src = texture.getAttribute("src");
-    if (src) urls.push(src);
-  });
+//   Array.from(textures).forEach((texture, i) => {
+//     const src = texture.getAttribute("src");
+//     if (src) urls.push(src);
+//   });
 
-  //promisesの配列を作り、urlsをmapする
-  const promises = urls.map((url: string, i: number) => {
-    return new Promise((resolve, reject) => {
-      const loader = new THREE.TextureLoader();
-      loader.load(
-        url,
-        (texture) => {
-          page.textureArray.push(texture);
-          resolve(texture);
-        },
-        undefined,
-        (err) => {
-          reject(err);
-        },
-      );
-    });
-  });
+//   //promisesの配列を作り、urlsをmapする
+//   const promises = urls.map((url: string, i: number) => {
+//     return new Promise((resolve, reject) => {
+//       const loader = new THREE.TextureLoader();
+//       loader.load(
+//         url,
+//         (texture) => {
+//           page.textures.push(texture);
+//           resolve(texture);
+//         },
+//         undefined,
+//         (err) => {
+//           reject(err);
+//         },
+//       );
+//     });
+//   });
 
-  // console.log(promises);
+//   // console.log(promises);
 
-  //このファンクションのreturnでpromisesの配列をPromise.allする
-  return Promise.all(promises);
-}
+//   //このファンクションのreturnでpromisesの配列をPromise.allする
+//   return Promise.all(promises);
+// }
 
-function _createMesh() {
+function _createMesh(textures: THREE.Texture[]) {
   console.log("_createMesh");
 
-  page.textureArray.forEach((tex: THREE.Texture) => {
+  textures.forEach((tex: THREE.Texture) => {
     const { naturalWidth, naturalHeight } = tex.source.data;
 
     const geometry = new THREE.PlaneGeometry(1, 1, 32, 32);
@@ -261,6 +262,43 @@ function _getItemElements() {
     img: item.querySelector("img") || null,
     index: index,
   }));
+}
+
+async function _loadTextureFromItems(
+  items: {
+    element: Element | undefined;
+    img: HTMLImageElement | null;
+    index: number | undefined;
+  }[],
+): Promise<THREE.Texture[]> {
+  const promises: Promise<THREE.Texture>[] = [];
+
+  items.map((item) => {
+    const url = item.img?.src;
+
+    promises.push(
+      new Promise((resolve, reject) => {
+        if (!url) {
+          reject(new Error("no url"));
+          return;
+        }
+
+        page.textureLoader.load(
+          url,
+          (texture) => {
+            page.textures.push(texture);
+            resolve(texture);
+          },
+          undefined,
+          (err) => {
+            reject(err);
+          },
+        );
+      }),
+    );
+  });
+
+  return Promise.all(promises);
 }
 
 export default page;
