@@ -15,9 +15,23 @@ interface Page {
       far: number;
     };
   };
+  $: {
+    ul: HTMLUListElement | undefined;
+    li: NodeListOf<HTMLLIElement> | undefined;
+  };
   scene: THREE.Scene;
-  textureArray: any;
-  init: (canvas: HTMLCanvasElement, textures: NodeListOf<Element>) => void;
+  textureLoader: THREE.TextureLoader;
+  items: {
+    element: Element | undefined;
+    img: HTMLImageElement | null;
+    index: number | undefined;
+  }[];
+  textures: THREE.Texture[];
+  init: (
+    canvas: HTMLCanvasElement,
+    ul: HTMLUListElement,
+    li: NodeListOf<HTMLLIElement>,
+  ) => void;
 }
 
 const page: Page = {
@@ -32,12 +46,28 @@ const page: Page = {
       far: 1000,
     },
   },
+  $: {
+    ul: undefined,
+    li: undefined,
+  },
   scene: new THREE.Scene(),
-  textureArray: [],
+  textureLoader: new THREE.TextureLoader(),
+  items: [
+    {
+      element: undefined,
+      img: null,
+      index: undefined,
+    },
+  ],
+  textures: [],
   init,
 };
 
-async function init(canvas: HTMLCanvasElement, textures: NodeListOf<Element>) {
+async function init(
+  canvas: HTMLCanvasElement,
+  ul: HTMLUListElement,
+  li: NodeListOf<HTMLLIElement>,
+) {
   console.log("page init");
 
   const { width, height, aspectRatio } = _getViewPortSize(canvas);
@@ -62,9 +92,15 @@ async function init(canvas: HTMLCanvasElement, textures: NodeListOf<Element>) {
   });
   renderer.setSize(page.numbers.canvasWidth, page.numbers.canvasHeight, false);
 
-  await _loadTexture(textures);
+  page.$.ul = ul;
+  page.$.li = li;
 
-  _createMesh();
+  page.items = _getItemElements();
+
+  await _loadTextureFromItems(page.items);
+  console.log(await _loadTextureFromItems(page.items));
+
+  _createMesh(page.textures);
 
   _tick(renderer, camera);
 
@@ -72,7 +108,7 @@ async function init(canvas: HTMLCanvasElement, textures: NodeListOf<Element>) {
     _onResize(canvas, renderer, camera);
   });
 
-  window.addEventListener("mousemove", (event) => {
+  page.$.ul.addEventListener("mousemove", (event) => {
     if (
       page.numbers.canvasWidth === undefined ||
       page.numbers.canvasHeight === undefined
@@ -85,46 +121,56 @@ async function init(canvas: HTMLCanvasElement, textures: NodeListOf<Element>) {
 
     _onMouseMove(event, page.numbers.canvasWidth, page.numbers.canvasHeight);
   });
-}
 
-async function _loadTexture(textures: NodeListOf<Element>) {
-  console.log("_loadTexture");
-
-  const urls: string[] = [];
-
-  Array.from(textures).forEach((texture, i) => {
-    const src = texture.getAttribute("src");
-    if (src) urls.push(src);
+  page.$.ul.addEventListener("mouseleave", () => {
+    _onMouseLeave();
   });
 
-  //promisesの配列を作り、urlsをmapする
-  const promises = urls.map((url: string, i: number) => {
-    return new Promise((resolve, reject) => {
-      const loader = new THREE.TextureLoader();
-      loader.load(
-        url,
-        (texture) => {
-          page.textureArray.push(texture);
-          resolve(texture);
-        },
-        undefined,
-        (err) => {
-          reject(err);
-        },
-      );
+  page.$.li.forEach((item) => {
+    item.addEventListener("mouseover", () => {
+      _onMouseOver();
     });
   });
-
-  // console.log(promises);
-
-  //このファンクションのreturnでpromisesの配列をPromise.allする
-  return Promise.all(promises);
 }
 
-function _createMesh() {
+// async function _loadTexture(textures: NodeListOf<Element>) {
+//   console.log("_loadTexture");
+
+//   const urls: string[] = [];
+
+//   Array.from(textures).forEach((texture, i) => {
+//     const src = texture.getAttribute("src");
+//     if (src) urls.push(src);
+//   });
+
+//   //promisesの配列を作り、urlsをmapする
+//   const promises = urls.map((url: string, i: number) => {
+//     return new Promise((resolve, reject) => {
+//       const loader = new THREE.TextureLoader();
+//       loader.load(
+//         url,
+//         (texture) => {
+//           page.textures.push(texture);
+//           resolve(texture);
+//         },
+//         undefined,
+//         (err) => {
+//           reject(err);
+//         },
+//       );
+//     });
+//   });
+
+//   // console.log(promises);
+
+//   //このファンクションのreturnでpromisesの配列をPromise.allする
+//   return Promise.all(promises);
+// }
+
+function _createMesh(textures: THREE.Texture[]) {
   console.log("_createMesh");
 
-  page.textureArray.forEach((tex: THREE.Texture) => {
+  textures.forEach((tex: THREE.Texture) => {
     const { naturalWidth, naturalHeight } = tex.source.data;
 
     const geometry = new THREE.PlaneGeometry(1, 1, 32, 32);
@@ -185,6 +231,14 @@ function _onMouseMove(
   const mouseY = -(event.clientY / canvasHeight) * 2 + 1;
 }
 
+function _onMouseLeave() {
+  console.log("mouseLeave");
+}
+
+function _onMouseOver() {
+  console.log("mouseover");
+}
+
 function _getViewPortSize(canvas: HTMLCanvasElement) {
   const canvasRect = canvas.getBoundingClientRect();
   const { width, height } = canvasRect;
@@ -198,6 +252,53 @@ function _getPixelFOV(height: number, cameraFar: number) {
   const fov = (180 * fovRadian) / Math.PI;
 
   return fov;
+}
+
+function _getItemElements() {
+  const items = document.querySelectorAll(".link");
+
+  return [...items].map((item, index) => ({
+    element: item,
+    img: item.querySelector("img") || null,
+    index: index,
+  }));
+}
+
+async function _loadTextureFromItems(
+  items: {
+    element: Element | undefined;
+    img: HTMLImageElement | null;
+    index: number | undefined;
+  }[],
+): Promise<THREE.Texture[]> {
+  const promises: Promise<THREE.Texture>[] = [];
+
+  items.map((item) => {
+    const url = item.img?.src;
+
+    promises.push(
+      new Promise((resolve, reject) => {
+        if (!url) {
+          reject(new Error("no url"));
+          return;
+        }
+
+        page.textureLoader.load(
+          url,
+          (texture) => {
+            page.textures.push(texture);
+            resolve(texture);
+          },
+          undefined,
+          (err) => {
+            reject(err);
+          },
+        );
+      }),
+    );
+  });
+
+  return Promise.all(promises);
 }
 
 export default page;
