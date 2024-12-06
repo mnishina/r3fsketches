@@ -3,6 +3,8 @@ import * as THREE from "three";
 import vertexShader from "./shaders/vertexShader.glsl";
 import fragmentShader from "./shaders/fragmentShader.glsl";
 
+import functions from "./functions.ts";
+
 import type { Page } from "./type.ts";
 
 const page: Page = {
@@ -16,8 +18,8 @@ const page: Page = {
       near: 0.1,
       far: 1000,
     },
-    texturePosition: new THREE.Vector3(0, 0, 0),
-    textureScale: new THREE.Vector3(1, 1, 1),
+    meshPosition: new THREE.Vector3(0, 0, 0),
+    meshScale: new THREE.Vector3(1, 1, 1),
   },
   $: {
     ul: undefined,
@@ -171,6 +173,24 @@ function _onMouseMove(
 ) {
   const mouseX = (event.clientX / canvasWidth) * 2 - 1;
   const mouseY = -(event.clientY / canvasHeight) * 2 + 1;
+
+  const x = functions.mapRange(
+    mouseX,
+    -1,
+    1,
+    -canvasWidth / 2,
+    canvasWidth / 2,
+  );
+  const y = functions.mapRange(
+    mouseY,
+    -1,
+    1,
+    -canvasHeight / 2,
+    canvasHeight / 2,
+  );
+
+  page.numbers.meshPosition = new THREE.Vector3(x, y, 0);
+  page.mesh?.position.copy(page.numbers.meshPosition);
 }
 
 function _onMouseLeave() {
@@ -189,8 +209,8 @@ function _onMouseOver(index: number, event: MouseEvent) {
   const { naturalWidth, naturalHeight } = page.currentItem.texture?.source.data;
   // const imageAspectRatio = naturalWidth / naturalHeight;
 
-  // page.numbers.textureScale = new THREE.Vector3(imageAspectRatio, 1, 1);
-  // page.mesh?.scale.copy(page.numbers.textureScale);
+  // page.numbers.meshScale = new THREE.Vector3(imageAspectRatio, 1, 1);
+  // page.mesh?.scale.copy(page.numbers.meshScale);
   page.mesh?.scale.set(naturalWidth, naturalHeight, 0);
 }
 

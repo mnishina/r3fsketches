@@ -11,8 +11,8 @@ export interface Page {
       near: number;
       far: number;
     };
-    texturePosition: THREE.Vector3;
-    textureScale: THREE.Vector3;
+    meshPosition: THREE.Vector3;
+    meshScale: THREE.Vector3;
   };
   $: {
     ul: HTMLUListElement | undefined;
