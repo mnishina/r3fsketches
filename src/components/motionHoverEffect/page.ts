@@ -79,7 +79,6 @@ async function init(
   page.items = _getItems();
 
   await _loadTextureFromItems(page.items);
-  // console.log(await _loadTextureFromItems(page.items));
 
   _createBaseMesh();
 
@@ -117,62 +116,6 @@ async function init(
     });
   });
 }
-
-// async function _loadTexture(textures: NodeListOf<Element>) {
-//   console.log("_loadTexture");
-
-//   const urls: string[] = [];
-
-//   Array.from(textures).forEach((texture, i) => {
-//     const src = texture.getAttribute("src");
-//     if (src) urls.push(src);
-//   });
-
-//   //promisesの配列を作り、urlsをmapする
-//   const promises = urls.map((url: string, i: number) => {
-//     return new Promise((resolve, reject) => {
-//       const loader = new THREE.TextureLoader();
-//       loader.load(
-//         url,
-//         (texture) => {
-//           page.textures.push(texture);
-//           resolve(texture);
-//         },
-//         undefined,
-//         (err) => {
-//           reject(err);
-//         },
-//       );
-//     });
-//   });
-
-//   // console.log(promises);
-
-//   //このファンクションのreturnでpromisesの配列をPromise.allする
-//   return Promise.all(promises);
-// }
-
-// function _createMesh(textures: THREE.Texture[]) {
-//   console.log("_createMesh");
-
-//   textures.forEach((tex: THREE.Texture) => {
-//     const { naturalWidth, naturalHeight } = tex.source.data;
-
-//     const geometry = new THREE.PlaneGeometry(1, 1, 32, 32);
-//     const material = new THREE.ShaderMaterial({
-//       // wireframe: true,
-//       vertexShader,
-//       fragmentShader,
-//       uniforms: {
-//         uTex: { value: tex },
-//         uAlpha: { value: 0 },
-//       },
-//     });
-//     const mesh = new THREE.Mesh(geometry, material);
-//     mesh.scale.set(naturalWidth, naturalHeight, 0);
-//     page.scene.add(mesh);
-//   });
-// }
 
 function _createBaseMesh() {
   const geometry = new THREE.PlaneGeometry(1, 1, 32, 32);
