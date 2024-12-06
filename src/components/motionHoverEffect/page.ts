@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { gsap, Power4 } from "gsap";
 
 import vertexShader from "./shaders/vertexShader.glsl";
 import fragmentShader from "./shaders/fragmentShader.glsl";
@@ -190,7 +191,14 @@ function _onMouseMove(
   );
 
   page.numbers.meshPosition = new THREE.Vector3(x, y, 0);
-  page.mesh?.position.copy(page.numbers.meshPosition);
+  // page.mesh?.position.copy(page.numbers.meshPosition);
+
+  gsap.to(page.mesh!.position, {
+    x: x,
+    y: y,
+    duration: 1,
+    ease: Power4.easeOut,
+  });
 }
 
 function _onMouseLeave() {
