@@ -22,8 +22,8 @@ interface Page {
   scene: THREE.Scene;
   textureLoader: THREE.TextureLoader;
   items: {
-    element: Element | undefined;
-    img: HTMLImageElement | null;
+    $item: Element | undefined;
+    $img: HTMLImageElement | null;
     index: number | undefined;
   }[];
   textures: THREE.Texture[];
@@ -54,8 +54,8 @@ const page: Page = {
   textureLoader: new THREE.TextureLoader(),
   items: [
     {
-      element: undefined,
-      img: null,
+      $item: undefined,
+      $img: null,
       index: undefined,
     },
   ],
@@ -95,7 +95,7 @@ async function init(
   page.$.ul = ul;
   page.$.li = li;
 
-  page.items = _getItemElements();
+  page.items = _getItems();
 
   await _loadTextureFromItems(page.items);
   console.log(await _loadTextureFromItems(page.items));
@@ -254,27 +254,27 @@ function _getPixelFOV(height: number, cameraFar: number) {
   return fov;
 }
 
-function _getItemElements() {
+function _getItems() {
   const items = document.querySelectorAll(".link");
 
   return [...items].map((item, index) => ({
-    element: item,
-    img: item.querySelector("img") || null,
+    $item: item,
+    $img: item.querySelector("img") || null,
     index: index,
   }));
 }
 
 async function _loadTextureFromItems(
   items: {
-    element: Element | undefined;
-    img: HTMLImageElement | null;
+    $item: Element | undefined;
+    $img: HTMLImageElement | null;
     index: number | undefined;
   }[],
 ): Promise<THREE.Texture[]> {
   const promises: Promise<THREE.Texture>[] = [];
 
   items.map((item) => {
-    const url = item.img?.src;
+    const url = item.$img?.src;
 
     promises.push(
       new Promise((resolve, reject) => {
