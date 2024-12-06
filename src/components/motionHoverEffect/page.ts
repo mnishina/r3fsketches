@@ -24,11 +24,25 @@ interface Page {
   items: {
     $item: Element | undefined;
     $img: HTMLImageElement | null;
+    texture: THREE.Texture | undefined;
     index: number | undefined;
   }[];
+  currentItem:
+    | {
+        $item: Element | undefined;
+        $img: HTMLImageElement | null;
+        texture: THREE.Texture | undefined;
+        index: number | undefined;
+      }
+    | undefined;
   textures: THREE.Texture[];
   texturePosition: THREE.Vector3;
   textureScale: THREE.Vector3;
+  uniforms: {
+    uAlpha: { value: number };
+    uOffset: { value: THREE.Vector2 };
+    uTexture: { value: THREE.Texture | null };
+  };
   init: (
     canvas: HTMLCanvasElement,
     ul: HTMLUListElement,
@@ -58,12 +72,19 @@ const page: Page = {
     {
       $item: undefined,
       $img: null,
+      texture: undefined,
       index: undefined,
     },
   ],
+  currentItem: undefined,
   textures: [],
   texturePosition: new THREE.Vector3(0, 0, 0),
   textureScale: new THREE.Vector3(1, 1, 1),
+  uniforms: {
+    uAlpha: { value: 0 },
+    uOffset: { value: new THREE.Vector2(0, 0) },
+    uTexture: { value: null },
+  },
   init,
 };
 
@@ -102,7 +123,7 @@ async function init(
   page.items = _getItems();
 
   await _loadTextureFromItems(page.items);
-  console.log(await _loadTextureFromItems(page.items));
+  // console.log(await _loadTextureFromItems(page.items));
 
   _createBaseMesh();
 
@@ -130,9 +151,13 @@ async function init(
     _onMouseLeave();
   });
 
-  page.$.li.forEach((item) => {
-    item.addEventListener("mouseover", () => {
-      _onMouseOver();
+  page.items.forEach((item, index) => {
+    const { $item } = item;
+
+    if (!$item) return;
+
+    $item.addEventListener("mouseover", (event) => {
+      _onMouseOver(index, event as MouseEvent);
     });
   });
 }
@@ -194,17 +219,12 @@ async function init(
 // }
 
 function _createBaseMesh() {
-  const uniforms = {
-    uAlpha: { value: 0 },
-    uOffset: { value: new THREE.Vector2(0, 0) },
-    uTexture: { value: null },
-  };
   const geometry = new THREE.PlaneGeometry(1, 1, 32, 32);
   const material = new THREE.ShaderMaterial({
     transparent: true,
     vertexShader,
     fragmentShader,
-    uniforms,
+    uniforms: page.uniforms,
   });
   const mesh = new THREE.Mesh(geometry, material);
   page.scene.add(mesh);
@@ -256,8 +276,12 @@ function _onMouseLeave() {
   console.log("mouseLeave");
 }
 
-function _onMouseOver() {
-  console.log("mouseover");
+function _onMouseOver(index: number, event: MouseEvent) {
+  console.log("mouseover", index, event);
+  page.currentItem = page.items[index];
+
+  page.currentItem.texture = page.items[index].texture;
+  console.log(page.currentItem.texture);
 }
 
 function _getViewPortSize(canvas: HTMLCanvasElement) {
@@ -281,6 +305,7 @@ function _getItems() {
   return [...items].map((item, index) => ({
     $item: item,
     $img: item.querySelector("img") || null,
+    texture: undefined,
     index: index,
   }));
 }
@@ -289,6 +314,7 @@ async function _loadTextureFromItems(
   items: {
     $item: Element | undefined;
     $img: HTMLImageElement | null;
+    texture: THREE.Texture | undefined;
     index: number | undefined;
   }[],
 ): Promise<THREE.Texture[]> {
@@ -308,6 +334,7 @@ async function _loadTextureFromItems(
           url,
           (texture) => {
             page.textures.push(texture);
+            item.texture = texture;
             resolve(texture);
           },
           undefined,
