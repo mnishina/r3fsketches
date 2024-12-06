@@ -1,3 +1,4 @@
+uniform vec2 uffset;
 
 varying vec2 vUv;
 
