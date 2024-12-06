@@ -11,12 +11,15 @@ export interface Page {
       near: number;
       far: number;
     };
+    texturePosition: THREE.Vector3;
+    textureScale: THREE.Vector3;
   };
   $: {
     ul: HTMLUListElement | undefined;
     li: NodeListOf<HTMLLIElement> | undefined;
   };
   scene: THREE.Scene;
+  mesh: THREE.Mesh | undefined;
   textureLoader: THREE.TextureLoader;
   items: {
     $item: Element | undefined;
@@ -33,12 +36,10 @@ export interface Page {
       }
     | undefined;
   textures: THREE.Texture[];
-  texturePosition: THREE.Vector3;
-  textureScale: THREE.Vector3;
   uniforms: {
     uAlpha: { value: number };
     uOffset: { value: THREE.Vector2 };
-    uTexture: { value: THREE.Texture | null };
+    uTexture: { value: THREE.Texture | undefined };
   };
   init: (
     canvas: HTMLCanvasElement,

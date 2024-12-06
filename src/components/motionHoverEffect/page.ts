@@ -16,12 +16,15 @@ const page: Page = {
       near: 0.1,
       far: 1000,
     },
+    texturePosition: new THREE.Vector3(0, 0, 0),
+    textureScale: new THREE.Vector3(1, 1, 1),
   },
   $: {
     ul: undefined,
     li: undefined,
   },
   scene: new THREE.Scene(),
+  mesh: undefined,
   textureLoader: new THREE.TextureLoader(),
   items: [
     {
@@ -33,12 +36,10 @@ const page: Page = {
   ],
   currentItem: undefined,
   textures: [],
-  texturePosition: new THREE.Vector3(0, 0, 0),
-  textureScale: new THREE.Vector3(1, 1, 1),
   uniforms: {
     uAlpha: { value: 0 },
     uOffset: { value: new THREE.Vector2(0, 0) },
-    uTexture: { value: null },
+    uTexture: { value: undefined },
   },
   init,
 };
@@ -183,6 +184,8 @@ function _createBaseMesh() {
   });
   const mesh = new THREE.Mesh(geometry, material);
   page.scene.add(mesh);
+
+  page.mesh = mesh;
 }
 
 function _tick(renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera) {
@@ -232,11 +235,20 @@ function _onMouseLeave() {
 }
 
 function _onMouseOver(index: number, event: MouseEvent) {
-  console.log("mouseover", index, event);
+  // console.log("mouseover", index, event);
   page.currentItem = page.items[index];
 
+  //set texture
   page.currentItem.texture = page.items[index].texture;
-  console.log(page.currentItem.texture);
+  page.uniforms.uTexture.value = page.currentItem.texture;
+
+  //set mesh size
+  const { naturalWidth, naturalHeight } = page.currentItem.texture?.source.data;
+  // const imageAspectRatio = naturalWidth / naturalHeight;
+
+  // page.numbers.textureScale = new THREE.Vector3(imageAspectRatio, 1, 1);
+  // page.mesh?.scale.copy(page.numbers.textureScale);
+  page.mesh?.scale.set(naturalWidth, naturalHeight, 0);
 }
 
 function _getViewPortSize(canvas: HTMLCanvasElement) {
