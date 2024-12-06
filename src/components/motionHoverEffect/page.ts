@@ -27,6 +27,8 @@ interface Page {
     index: number | undefined;
   }[];
   textures: THREE.Texture[];
+  texturePosition: THREE.Vector3;
+  textureScale: THREE.Vector3;
   init: (
     canvas: HTMLCanvasElement,
     ul: HTMLUListElement,
@@ -60,6 +62,8 @@ const page: Page = {
     },
   ],
   textures: [],
+  texturePosition: new THREE.Vector3(0, 0, 0),
+  textureScale: new THREE.Vector3(1, 1, 1),
   init,
 };
 
@@ -100,7 +104,7 @@ async function init(
   await _loadTextureFromItems(page.items);
   console.log(await _loadTextureFromItems(page.items));
 
-  _createMesh(page.textures);
+  _createBaseMesh();
 
   _tick(renderer, camera);
 
@@ -167,26 +171,43 @@ async function init(
 //   return Promise.all(promises);
 // }
 
-function _createMesh(textures: THREE.Texture[]) {
-  console.log("_createMesh");
+// function _createMesh(textures: THREE.Texture[]) {
+//   console.log("_createMesh");
 
-  textures.forEach((tex: THREE.Texture) => {
-    const { naturalWidth, naturalHeight } = tex.source.data;
+//   textures.forEach((tex: THREE.Texture) => {
+//     const { naturalWidth, naturalHeight } = tex.source.data;
 
-    const geometry = new THREE.PlaneGeometry(1, 1, 32, 32);
-    const material = new THREE.ShaderMaterial({
-      // wireframe: true,
-      vertexShader,
-      fragmentShader,
-      uniforms: {
-        uTex: { value: tex },
-        uAlpha: { value: 0 },
-      },
-    });
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.scale.set(naturalWidth, naturalHeight, 0);
-    page.scene.add(mesh);
+//     const geometry = new THREE.PlaneGeometry(1, 1, 32, 32);
+//     const material = new THREE.ShaderMaterial({
+//       // wireframe: true,
+//       vertexShader,
+//       fragmentShader,
+//       uniforms: {
+//         uTex: { value: tex },
+//         uAlpha: { value: 0 },
+//       },
+//     });
+//     const mesh = new THREE.Mesh(geometry, material);
+//     mesh.scale.set(naturalWidth, naturalHeight, 0);
+//     page.scene.add(mesh);
+//   });
+// }
+
+function _createBaseMesh() {
+  const uniforms = {
+    uAlpha: { value: 0 },
+    uOffset: { value: new THREE.Vector2(0, 0) },
+    uTexture: { value: null },
+  };
+  const geometry = new THREE.PlaneGeometry(1, 1, 32, 32);
+  const material = new THREE.ShaderMaterial({
+    transparent: true,
+    vertexShader,
+    fragmentShader,
+    uniforms,
   });
+  const mesh = new THREE.Mesh(geometry, material);
+  page.scene.add(mesh);
 }
 
 function _tick(renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera) {
