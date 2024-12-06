@@ -13,19 +13,16 @@ const title = getPageTitle(pagesData, Astro.url.pathname);
   <ul>
     <li>
       <a href="#" class="link">
-        <div>bnw001</div>
         <img src="/bnw003.png" alt="" data-webGLTexture />
       </a>
     </li>
     <li>
       <a href="#" class="link">
-        <div>bnw001</div>
         <img src="/bnw001.png" alt="" data-webGLTexture />
       </a>
     </li>
     <li>
       <a href="#" class="link">
-        <div>bnw001</div>
         <img src="/bnw002.png" alt="" data-webGLTexture />
       </a>
     </li>
@@ -46,5 +43,10 @@ const title = getPageTitle(pagesData, Astro.url.pathname);
   ul,
   li {
     background-color: transparent;
+
+    a {
+      border: 1px solid red;
+      display: block;
+    }
   }
 </style>
