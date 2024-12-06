@@ -273,7 +273,7 @@ async function _loadTextureFromItems(
 ): Promise<THREE.Texture[]> {
   const promises: Promise<THREE.Texture>[] = [];
 
-  items.map((item) => {
+  items.forEach((item) => {
     const url = item.$img?.src;
 
     promises.push(
