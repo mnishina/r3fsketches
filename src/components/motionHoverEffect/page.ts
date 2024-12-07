@@ -58,8 +58,8 @@ async function init(
 ) {
   console.log("page init");
 
-  const { width, height, aspectRatio } = _getViewPortSize(canvas);
-  const fov = _getPixelFOV(height, page.numbers.camera.far);
+  const { width, height, aspectRatio } = functions.getViewPortSize(canvas);
+  const fov = functions.getPixelFOV(height, page.numbers.camera.far);
   page.numbers.canvasWidth = width;
   page.numbers.canvasHeight = height;
   page.numbers.aspectRatio = aspectRatio;
@@ -100,7 +100,7 @@ async function init(
       page.numbers.canvasWidth === undefined ||
       page.numbers.canvasHeight === undefined
     ) {
-      const { width, height } = _getViewPortSize(canvas);
+      const { width, height } = functions.getViewPortSize(canvas);
 
       page.numbers.canvasWidth = width;
       page.numbers.canvasHeight = height;
@@ -160,8 +160,8 @@ function _onResize(
   timeoutID = setTimeout(() => {
     if (timeoutID) clearTimeout(timeoutID);
 
-    const { width, height, aspectRatio } = _getViewPortSize(canvas);
-    const fov = _getPixelFOV(height, page.numbers.camera.far);
+    const { width, height, aspectRatio } = functions.getViewPortSize(canvas);
+    const fov = functions.getPixelFOV(height, page.numbers.camera.far);
     renderer.setSize(width, height, false);
 
     camera.aspect = aspectRatio;
@@ -258,21 +258,6 @@ function _onPositionUpdate() {
   let offset2d = new THREE.Vector2(offset.x, offset.y); //offsetは３次元ベクトルなので、vector2にするため、x,y成分を抽出する。
 
   page.uniforms.uOffset.value = offset2d;
-}
-
-function _getViewPortSize(canvas: HTMLCanvasElement) {
-  const canvasRect = canvas.getBoundingClientRect();
-  const { width, height } = canvasRect;
-  const aspectRatio = width / height;
-
-  return { width, height, aspectRatio };
-}
-
-function _getPixelFOV(height: number, cameraFar: number) {
-  const fovRadian = 2 * Math.atan(height / 2 / cameraFar);
-  const fov = (180 * fovRadian) / Math.PI;
-
-  return fov;
 }
 
 function _getItems() {
