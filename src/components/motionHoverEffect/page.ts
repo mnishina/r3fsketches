@@ -21,6 +21,7 @@ const page: Page = {
     },
     meshPosition: new THREE.Vector3(0, 0, 0),
     meshScale: new THREE.Vector3(1, 1, 1),
+    strength: 0.001,
   },
   $: {
     ul: undefined,
@@ -210,6 +211,7 @@ function _onMouseMove(
     y: y,
     duration: 1,
     ease: Power4.easeOut,
+    onUpdate: _onPositionUpdate,
   });
 }
 
@@ -250,6 +252,17 @@ function _onMouseOver(index: number, event: MouseEvent) {
   // page.numbers.meshScale = new THREE.Vector3(imageAspectRatio, 1, 1);
   // page.mesh?.scale.copy(page.numbers.meshScale);
   page.mesh?.scale.set(naturalWidth, naturalHeight, 0);
+}
+
+function _onPositionUpdate() {
+  if (!page.mesh) return;
+
+  let meshPos = page.mesh.position.clone();
+  let posDelta = meshPos.sub(page.numbers.meshPosition); //現在のベクトル（meshPos）から引数のベクトル（page.numbers.meshPosition）の差。
+  let offset = posDelta.multiplyScalar(-page.numbers.strength); //ベクトルのすべての成分（x, y, z）に同じ数値（スカラー値）を掛け算する操作です。
+  let offset2d = new THREE.Vector2(offset.x, offset.y); //offsetは３次元ベクトルなので、vector2にするため、x,y成分を抽出する。
+
+  page.uniforms.uOffset.value = offset2d;
 }
 
 function _getViewPortSize(canvas: HTMLCanvasElement) {
