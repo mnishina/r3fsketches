@@ -216,8 +216,6 @@ function _onMouseMove(
 }
 
 function _onMouseEnter() {
-  console.log("mouseEnter");
-
   gsap.to(page.uniforms.uAlpha, {
     value: 1,
     ease: Power4.easeOut,
@@ -227,8 +225,6 @@ function _onMouseEnter() {
 }
 
 function _onMouseLeave() {
-  console.log("mouseLeave");
-
   gsap.to(page.uniforms.uAlpha, {
     value: 0,
     ease: Power4.easeOut,
@@ -238,7 +234,6 @@ function _onMouseLeave() {
 }
 
 function _onMouseOver(index: number, event: MouseEvent) {
-  // console.log("mouseover", index, event);
   page.currentItem = page.items[index];
 
   //set texture
