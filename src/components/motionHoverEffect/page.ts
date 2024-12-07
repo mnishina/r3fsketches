@@ -39,6 +39,9 @@ const page: Page = {
   ],
   currentItem: undefined,
   textures: [],
+  state: {
+    isMouseOver: false,
+  },
   uniforms: {
     uAlpha: { value: 0 },
     uOffset: { value: new THREE.Vector2(0, 0) },
@@ -103,6 +106,10 @@ async function init(
     }
 
     _onMouseMove(event, page.numbers.canvasWidth, page.numbers.canvasHeight);
+  });
+
+  page.$.ul.addEventListener("mouseenter", () => {
+    _onMouseEnter();
   });
 
   page.$.ul.addEventListener("mouseleave", () => {
@@ -172,6 +179,11 @@ function _onMouseMove(
   canvasWidth: number,
   canvasHeight: number,
 ) {
+  if (!page.mesh) {
+    console.log("no mesh");
+    return;
+  }
+
   const mouseX = (event.clientX / canvasWidth) * 2 - 1;
   const mouseY = -(event.clientY / canvasHeight) * 2 + 1;
 
@@ -191,9 +203,9 @@ function _onMouseMove(
   );
 
   page.numbers.meshPosition = new THREE.Vector3(x, y, 0);
-  // page.mesh?.position.copy(page.numbers.meshPosition);
+  // page.mesh.position.copy(page.numbers.meshPosition);
 
-  gsap.to(page.mesh!.position, {
+  gsap.to(page.mesh.position, {
     x: x,
     y: y,
     duration: 1,
@@ -201,8 +213,26 @@ function _onMouseMove(
   });
 }
 
+function _onMouseEnter() {
+  console.log("mouseEnter");
+
+  gsap.to(page.uniforms.uAlpha, {
+    value: 1,
+    ease: Power4.easeOut,
+  });
+
+  page.state.isMouseOver = true;
+}
+
 function _onMouseLeave() {
   console.log("mouseLeave");
+
+  gsap.to(page.uniforms.uAlpha, {
+    value: 0,
+    ease: Power4.easeOut,
+  });
+
+  page.state.isMouseOver = false;
 }
 
 function _onMouseOver(index: number, event: MouseEvent) {
