@@ -13,6 +13,7 @@ export interface Page {
     };
     meshPosition: THREE.Vector3;
     meshScale: THREE.Vector3;
+    strength: number;
   };
   $: {
     ul: HTMLUListElement | undefined;
@@ -36,6 +37,9 @@ export interface Page {
       }
     | undefined;
   textures: THREE.Texture[];
+  state: {
+    isMouseOver: Boolean;
+  };
   uniforms: {
     uAlpha: { value: number };
     uOffset: { value: THREE.Vector2 };

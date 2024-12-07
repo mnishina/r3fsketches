@@ -21,6 +21,7 @@ const page: Page = {
     },
     meshPosition: new THREE.Vector3(0, 0, 0),
     meshScale: new THREE.Vector3(1, 1, 1),
+    strength: 0.001,
   },
   $: {
     ul: undefined,
@@ -39,6 +40,9 @@ const page: Page = {
   ],
   currentItem: undefined,
   textures: [],
+  state: {
+    isMouseOver: false,
+  },
   uniforms: {
     uAlpha: { value: 0 },
     uOffset: { value: new THREE.Vector2(0, 0) },
@@ -54,8 +58,8 @@ async function init(
 ) {
   console.log("page init");
 
-  const { width, height, aspectRatio } = _getViewPortSize(canvas);
-  const fov = _getPixelFOV(height, page.numbers.camera.far);
+  const { width, height, aspectRatio } = functions.getViewPortSize(canvas);
+  const fov = functions.getPixelFOV(height, page.numbers.camera.far);
   page.numbers.canvasWidth = width;
   page.numbers.canvasHeight = height;
   page.numbers.aspectRatio = aspectRatio;
@@ -96,13 +100,17 @@ async function init(
       page.numbers.canvasWidth === undefined ||
       page.numbers.canvasHeight === undefined
     ) {
-      const { width, height } = _getViewPortSize(canvas);
+      const { width, height } = functions.getViewPortSize(canvas);
 
       page.numbers.canvasWidth = width;
       page.numbers.canvasHeight = height;
     }
 
     _onMouseMove(event, page.numbers.canvasWidth, page.numbers.canvasHeight);
+  });
+
+  page.$.ul.addEventListener("mouseenter", () => {
+    _onMouseEnter();
   });
 
   page.$.ul.addEventListener("mouseleave", () => {
@@ -152,8 +160,8 @@ function _onResize(
   timeoutID = setTimeout(() => {
     if (timeoutID) clearTimeout(timeoutID);
 
-    const { width, height, aspectRatio } = _getViewPortSize(canvas);
-    const fov = _getPixelFOV(height, page.numbers.camera.far);
+    const { width, height, aspectRatio } = functions.getViewPortSize(canvas);
+    const fov = functions.getPixelFOV(height, page.numbers.camera.far);
     renderer.setSize(width, height, false);
 
     camera.aspect = aspectRatio;
@@ -172,6 +180,11 @@ function _onMouseMove(
   canvasWidth: number,
   canvasHeight: number,
 ) {
+  if (!page.mesh) {
+    console.log("no mesh");
+    return;
+  }
+
   const mouseX = (event.clientX / canvasWidth) * 2 - 1;
   const mouseY = -(event.clientY / canvasHeight) * 2 + 1;
 
@@ -191,22 +204,36 @@ function _onMouseMove(
   );
 
   page.numbers.meshPosition = new THREE.Vector3(x, y, 0);
-  // page.mesh?.position.copy(page.numbers.meshPosition);
+  // page.mesh.position.copy(page.numbers.meshPosition);
 
-  gsap.to(page.mesh!.position, {
+  gsap.to(page.mesh.position, {
     x: x,
     y: y,
     duration: 1,
     ease: Power4.easeOut,
+    onUpdate: _onPositionUpdate,
   });
 }
 
+function _onMouseEnter() {
+  gsap.to(page.uniforms.uAlpha, {
+    value: 1,
+    ease: Power4.easeOut,
+  });
+
+  page.state.isMouseOver = true;
+}
+
 function _onMouseLeave() {
-  console.log("mouseLeave");
+  gsap.to(page.uniforms.uAlpha, {
+    value: 0,
+    ease: Power4.easeOut,
+  });
+
+  page.state.isMouseOver = false;
 }
 
 function _onMouseOver(index: number, event: MouseEvent) {
-  // console.log("mouseover", index, event);
   page.currentItem = page.items[index];
 
   //set texture
@@ -222,19 +249,15 @@ function _onMouseOver(index: number, event: MouseEvent) {
   page.mesh?.scale.set(naturalWidth, naturalHeight, 0);
 }
 
-function _getViewPortSize(canvas: HTMLCanvasElement) {
-  const canvasRect = canvas.getBoundingClientRect();
-  const { width, height } = canvasRect;
-  const aspectRatio = width / height;
+function _onPositionUpdate() {
+  if (!page.mesh) return;
 
-  return { width, height, aspectRatio };
-}
+  let meshPos = page.mesh.position.clone();
+  let posDelta = meshPos.sub(page.numbers.meshPosition); //現在のベクトル（meshPos）から引数のベクトル（page.numbers.meshPosition）の差。
+  let offset = posDelta.multiplyScalar(-page.numbers.strength); //ベクトルのすべての成分（x, y, z）に同じ数値（スカラー値）を掛け算する操作です。
+  let offset2d = new THREE.Vector2(offset.x, offset.y); //offsetは３次元ベクトルなので、vector2にするため、x,y成分を抽出する。
 
-function _getPixelFOV(height: number, cameraFar: number) {
-  const fovRadian = 2 * Math.atan(height / 2 / cameraFar);
-  const fov = (180 * fovRadian) / Math.PI;
-
-  return fov;
+  page.uniforms.uOffset.value = offset2d;
 }
 
 function _getItems() {
