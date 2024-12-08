@@ -79,6 +79,10 @@ export const pagesData = [
     title: "Motion Hover Effect",
     url: "/motionHoverEffect/",
   },
+  {
+    title: "wind image",
+    url: "/windImage/",
+  },
 ];
 
 interface PageData {
