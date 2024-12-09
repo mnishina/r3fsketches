@@ -13,6 +13,7 @@ interface Page {
     };
   };
   scene: THREE.Scene;
+  textureLoader: THREE.TextureLoader;
   init: (canvas: HTMLCanvasElement) => void;
 }
 
@@ -29,15 +30,14 @@ const page: Page = {
     },
   },
   scene: new THREE.Scene(),
+  textureLoader: new THREE.TextureLoader(),
   init,
 };
 
 function init(canvas: HTMLCanvasElement) {
   console.log("page init");
 
-  const canvasRect = canvas.getBoundingClientRect();
-  const { width, height } = canvasRect;
-  const aspectRatio = width / height;
+  const { width, height, aspectRatio } = _getViewportInfo(canvas);
 
   page.numbers.canvasWidth = width;
   page.numbers.canvasHeight = height;
@@ -93,9 +93,7 @@ function _onResize(
   timeoutID = setTimeout(() => {
     if (timeoutID) clearTimeout(timeoutID);
 
-    const canvasRect = canvas.getBoundingClientRect();
-    const { width, height } = canvasRect;
-    const aspectRatio = width / height;
+    const { width, height, aspectRatio } = _getViewportInfo(canvas);
 
     renderer.setSize(width, height, false);
 
@@ -106,6 +104,14 @@ function _onResize(
     page.numbers.canvasHeight = height;
     page.numbers.camera.aspectRatio = aspectRatio;
   }, 500);
+}
+
+function _getViewportInfo(canvas: HTMLCanvasElement) {
+  const canvasRect = canvas.getBoundingClientRect();
+  const { width, height } = canvasRect;
+  const aspectRatio = width / height;
+
+  return { width, height, aspectRatio };
 }
 
 export default page;
