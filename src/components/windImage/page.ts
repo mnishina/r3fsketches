@@ -20,20 +20,21 @@ const page: Page = {
   uniforms: {
     uTexture: { value: new THREE.Texture() },
   },
-  imageInfo: {
+  assetsInfo: {
     imageTexture: undefined,
     noiseTexture: undefined,
     src: undefined,
     width: undefined,
     height: undefined,
   },
-  imageInformations: [],
+  assets: [],
   noiseAssets: ["/noise.png", "/perlin.png"],
   scene: new THREE.Scene(),
+  textureLoader: new THREE.TextureLoader(),
   init,
 };
 
-async function init(canvas: HTMLCanvasElement) {
+async function init(canvas: HTMLCanvasElement, $images: NodeListOf<Element>) {
   console.log("page init");
 
   const { width, height, aspectRatio } = _getViewportInfo(canvas);
@@ -55,9 +56,13 @@ async function init(canvas: HTMLCanvasElement) {
   );
   camera.position.set(0, 0, 5);
 
-  await _loadImage();
+  _getAssetsInfo($images);
+
+  await _loadImage($images);
 
   _createMesh();
+
+  console.log("aaa");
 
   _tick(renderer, camera);
 
@@ -77,9 +82,9 @@ function _createMesh() {
 
   const tempNum: number = 1000;
 
-  page.imageInformations.forEach((info) => {
-    if (info.width !== undefined && info.height !== undefined) {
-      const { imageTexture, width, height } = info;
+  page.assets.forEach((asset) => {
+    if (asset.width !== undefined && asset.height !== undefined) {
+      const { imageTexture, width, height } = asset;
 
       material.uniforms.uTexture.value = imageTexture;
 
@@ -100,23 +105,27 @@ function _tick(renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera) {
   renderer.render(page.scene, camera);
 }
 
-async function _loadImage() {
-  const $image = document.querySelectorAll("[data-webgl-image]");
-
-  const textureLoader = new THREE.TextureLoader();
-  const loadTexture = [...$image].map((image: Element, i: number) => {
+function _getAssetsInfo($images: NodeListOf<Element>) {
+  [...$images].map((image: Element) => {
     const { src, naturalWidth, naturalHeight } = image as HTMLImageElement;
 
+    page.assetsInfo.src = src;
+    page.assetsInfo.width = naturalWidth;
+    page.assetsInfo.height = naturalHeight;
+
+    page.assets.push(page.assetsInfo);
+  });
+}
+
+async function _loadImage($images: NodeListOf<Element>) {
+  const imageTexture = [...$images].map((image: Element, i: number) => {
+    const { src } = image as HTMLImageElement;
+
     return new Promise((resolve, reject) => {
-      textureLoader.load(
+      page.textureLoader.load(
         src,
         (image) => {
-          page.imageInfo.imageTexture = image;
-          page.imageInfo.src = src;
-          page.imageInfo.width = naturalWidth;
-          page.imageInfo.height = naturalHeight;
-
-          page.imageInformations.push(page.imageInfo);
+          page.assets[i].imageTexture = image;
 
           resolve(image);
         },
@@ -130,12 +139,14 @@ async function _loadImage() {
   });
 
   try {
-    return await Promise.all(loadTexture);
+    return await Promise.all(imageTexture);
   } catch (error) {
     console.error("Error loading images", error);
     throw error;
   }
 }
+
+function _loadNoiseImage() {}
 
 function _onResize(
   canvas: HTMLCanvasElement,

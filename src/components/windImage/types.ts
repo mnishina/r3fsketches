@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-interface ImageInfo {
+interface assetsInfo {
   imageTexture: THREE.Texture | undefined;
   noiseTexture: THREE.Texture | undefined;
   src: string | undefined;
@@ -23,9 +23,10 @@ export interface Page {
   uniforms: {
     uTexture: { value: THREE.Texture };
   };
-  imageInfo: ImageInfo;
-  imageInformations: ImageInfo[];
+  assetsInfo: assetsInfo;
+  assets: assetsInfo[];
   noiseAssets: [string, string];
   scene: THREE.Scene;
-  init: (canvas: HTMLCanvasElement) => void;
+  textureLoader: THREE.TextureLoader;
+  init: (canvas: HTMLCanvasElement, $image: NodeListOf<Element>) => void;
 }
