@@ -1,5 +1,8 @@
 import * as THREE from "three";
 
+import vertexShader from "./shaders/vertexShader.glsl";
+import fragmentShader from "./shaders/fragmentShader.glsl";
+
 interface Page {
   numbers: {
     canvasWidth: number | undefined;
@@ -14,6 +17,9 @@ interface Page {
   };
   scene: THREE.Scene;
   textureLoader: THREE.TextureLoader;
+  uniforms: {
+    uTexture: { value: THREE.Texture };
+  };
   init: (canvas: HTMLCanvasElement) => void;
 }
 
@@ -28,6 +34,9 @@ const page: Page = {
       near: 0.1,
       far: 1000,
     },
+  },
+  uniforms: {
+    uTexture: { value: new THREE.Texture() },
   },
   scene: new THREE.Scene(),
   textureLoader: new THREE.TextureLoader(),
@@ -67,8 +76,11 @@ function init(canvas: HTMLCanvasElement) {
 
 function _createMesh() {
   const geometry = new THREE.BoxGeometry(1, 1, 1, 3, 3, 3);
-  const material = new THREE.MeshBasicMaterial({
-    wireframe: true,
+  const material = new THREE.ShaderMaterial({
+    // wireframe: true,
+    vertexShader,
+    fragmentShader,
+    uniforms: page.uniforms,
   });
 
   const mesh = new THREE.Mesh(geometry, material);
