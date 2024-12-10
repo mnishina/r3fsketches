@@ -68,6 +68,7 @@ async function init({
   _getAssetsInfo(images);
 
   await _loadImage(images);
+  _loadNoiseImage(page.noiseAssets);
 
   _createMesh();
 
@@ -161,7 +162,15 @@ async function _loadImage(images: NodeListOf<Element>) {
   }
 }
 
-function _loadNoiseImage() {}
+function _loadNoiseImage(noiseAssets: string[]) {
+  console.log(noiseAssets);
+
+  // const noiseTexture = assets.map((asset) => {
+  //   return new Promise((resolve, reject) => {
+  //     page.textureLoader.load()
+  //   });
+  // });
+}
 
 function _onResize({
   canvas,
