@@ -3,6 +3,14 @@ import * as THREE from "three";
 import vertexShader from "./shaders/vertexShader.glsl";
 import fragmentShader from "./shaders/fragmentShader.glsl";
 
+interface ImageInfo {
+  imageTexture: THREE.Texture | undefined;
+  noiseTexture: THREE.Texture | undefined;
+  src: string | undefined;
+  width: number | undefined;
+  height: number | undefined;
+}
+
 interface Page {
   numbers: {
     canvasWidth: number | undefined;
@@ -18,12 +26,9 @@ interface Page {
   uniforms: {
     uTexture: { value: THREE.Texture };
   };
-  imageInformations: {
-    image: THREE.Texture | undefined;
-    src: string | undefined;
-    width: number | undefined;
-    height: number | undefined;
-  }[];
+  imageInfo: ImageInfo;
+  imageInformations: ImageInfo[];
+  noiseAssets: [string, string];
   scene: THREE.Scene;
   init: (canvas: HTMLCanvasElement) => void;
 }
@@ -43,7 +48,15 @@ const page: Page = {
   uniforms: {
     uTexture: { value: new THREE.Texture() },
   },
+  imageInfo: {
+    imageTexture: undefined,
+    noiseTexture: undefined,
+    src: undefined,
+    width: undefined,
+    height: undefined,
+  },
   imageInformations: [],
+  noiseAssets: ["/noise.png", "/perlin.png"],
   scene: new THREE.Scene(),
   init,
 };
@@ -94,9 +107,9 @@ function _createMesh() {
 
   page.imageInformations.forEach((info) => {
     if (info.width !== undefined && info.height !== undefined) {
-      const { image, width, height } = info;
+      const { imageTexture, width, height } = info;
 
-      material.uniforms.uTexture.value = image;
+      material.uniforms.uTexture.value = imageTexture;
 
       const mesh = new THREE.Mesh(geometry, material);
       mesh.scale.set(width / tempNum, height / tempNum, 0);
@@ -119,20 +132,19 @@ async function _loadImage() {
   const $image = document.querySelectorAll("[data-webgl-image]");
 
   const textureLoader = new THREE.TextureLoader();
-  const loadTexture = [...$image].map((image: Element) => {
+  const loadTexture = [...$image].map((image: Element, i: number) => {
     const { src, naturalWidth, naturalHeight } = image as HTMLImageElement;
 
     return new Promise((resolve, reject) => {
       textureLoader.load(
         src,
         (image) => {
-          const info = {
-            image: image,
-            src: src,
-            width: naturalWidth,
-            height: naturalHeight,
-          };
-          page.imageInformations.push(info);
+          page.imageInfo.imageTexture = image;
+          page.imageInfo.src = src;
+          page.imageInfo.width = naturalWidth;
+          page.imageInfo.height = naturalHeight;
+
+          page.imageInformations.push(page.imageInfo);
 
           resolve(image);
         },
