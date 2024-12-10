@@ -133,7 +133,12 @@ async function _loadImage() {
     });
   });
 
-  return Promise.all(loadTexture);
+  try {
+    return await Promise.all(loadTexture);
+  } catch (error) {
+    console.error("Error loading images", error);
+    throw error;
+  }
 }
 
 function _onResize(
