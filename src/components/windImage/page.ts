@@ -15,11 +15,16 @@ interface Page {
       far: number;
     };
   };
-  scene: THREE.Scene;
-  textureLoader: THREE.TextureLoader;
   uniforms: {
     uTexture: { value: THREE.Texture };
   };
+  imageInformations: {
+    image: Element | undefined;
+    src: string | undefined;
+    width: number | undefined;
+    height: number | undefined;
+  }[];
+  scene: THREE.Scene;
   init: (canvas: HTMLCanvasElement) => void;
 }
 
@@ -38,12 +43,12 @@ const page: Page = {
   uniforms: {
     uTexture: { value: new THREE.Texture() },
   },
+  imageInformations: [],
   scene: new THREE.Scene(),
-  textureLoader: new THREE.TextureLoader(),
   init,
 };
 
-function init(canvas: HTMLCanvasElement) {
+async function init(canvas: HTMLCanvasElement) {
   console.log("page init");
 
   const { width, height, aspectRatio } = _getViewportInfo(canvas);
@@ -64,6 +69,9 @@ function init(canvas: HTMLCanvasElement) {
     page.numbers.camera.far,
   );
   camera.position.set(0, 0, 5);
+
+  await _loadImage();
+  console.log(page.imageInformations);
 
   _createMesh();
 
@@ -93,6 +101,39 @@ function _tick(renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera) {
   });
 
   renderer.render(page.scene, camera);
+}
+
+async function _loadImage() {
+  const $image = document.querySelectorAll("[data-webgl-image]");
+
+  const textureLoader = new THREE.TextureLoader();
+  const loadTexture = [...$image].map((image: Element) => {
+    const { src, naturalWidth, naturalHeight } = image as HTMLImageElement;
+
+    return new Promise((resolve, reject) => {
+      textureLoader.load(
+        src,
+        () => {
+          const info = {
+            image: image,
+            src: src,
+            width: naturalWidth,
+            height: naturalHeight,
+          };
+          page.imageInformations.push(info);
+
+          resolve(image);
+        },
+        undefined,
+        (err) => {
+          console.error(`Load failed: ${src}`);
+          reject(err);
+        },
+      );
+    });
+  });
+
+  return Promise.all(loadTexture);
 }
 
 function _onResize(
