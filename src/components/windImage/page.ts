@@ -19,7 +19,7 @@ interface Page {
     uTexture: { value: THREE.Texture };
   };
   imageInformations: {
-    image: Element | undefined;
+    image: THREE.Texture | undefined;
     src: string | undefined;
     width: number | undefined;
     height: number | undefined;
@@ -71,7 +71,6 @@ async function init(canvas: HTMLCanvasElement) {
   camera.position.set(0, 0, 5);
 
   await _loadImage();
-  console.log(page.imageInformations);
 
   _createMesh();
 
@@ -83,7 +82,7 @@ async function init(canvas: HTMLCanvasElement) {
 }
 
 function _createMesh() {
-  const geometry = new THREE.BoxGeometry(1, 1, 1, 3, 3, 3);
+  const geometry = new THREE.PlaneGeometry(1, 1, 32, 32);
   const material = new THREE.ShaderMaterial({
     // wireframe: true,
     vertexShader,
@@ -91,8 +90,21 @@ function _createMesh() {
     uniforms: page.uniforms,
   });
 
-  const mesh = new THREE.Mesh(geometry, material);
-  page.scene.add(mesh);
+  const tempNum: number = 1000;
+
+  page.imageInformations.forEach((info) => {
+    if (info.width !== undefined && info.height !== undefined) {
+      const { image, width, height } = info;
+
+      material.uniforms.uTexture.value = image;
+
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.scale.set(width / tempNum, height / tempNum, 0);
+      page.scene.add(mesh);
+    } else {
+      console.warn("undefined image width and height");
+    }
+  });
 }
 
 function _tick(renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera) {
@@ -113,7 +125,7 @@ async function _loadImage() {
     return new Promise((resolve, reject) => {
       textureLoader.load(
         src,
-        () => {
+        (image) => {
           const info = {
             image: image,
             src: src,
