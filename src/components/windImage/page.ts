@@ -34,7 +34,13 @@ const page: Page = {
   init,
 };
 
-async function init(canvas: HTMLCanvasElement, $images: NodeListOf<Element>) {
+async function init({
+  canvas,
+  images,
+}: {
+  canvas: HTMLCanvasElement;
+  images: NodeListOf<Element>;
+}) {
   console.log("page init");
 
   const { width, height, aspectRatio } = _getViewportInfo(canvas);
@@ -43,7 +49,10 @@ async function init(canvas: HTMLCanvasElement, $images: NodeListOf<Element>) {
   page.numbers.canvasHeight = height;
   page.numbers.camera.aspectRatio = aspectRatio;
 
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  const renderer = new THREE.WebGLRenderer({
+    canvas: canvas,
+    antialias: true,
+  });
   renderer.setSize(page.numbers.canvasWidth, page.numbers.canvasHeight, false);
   renderer.setPixelRatio(page.numbers.devicePixelRatio);
 
@@ -56,18 +65,18 @@ async function init(canvas: HTMLCanvasElement, $images: NodeListOf<Element>) {
   );
   camera.position.set(0, 0, 5);
 
-  _getAssetsInfo($images);
+  _getAssetsInfo(images);
 
-  await _loadImage($images);
+  await _loadImage(images);
 
   _createMesh();
 
   console.log("aaa");
 
-  _tick(renderer, camera);
+  _tick({ renderer, camera });
 
   window.addEventListener("resize", () => {
-    _onResize(canvas, renderer, camera);
+    _onResize({ canvas, renderer, camera });
   });
 }
 
@@ -97,16 +106,22 @@ function _createMesh() {
   });
 }
 
-function _tick(renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera) {
+function _tick({
+  renderer,
+  camera,
+}: {
+  renderer: THREE.WebGLRenderer;
+  camera: THREE.PerspectiveCamera;
+}) {
   requestAnimationFrame(() => {
-    _tick(renderer, camera);
+    _tick({ renderer, camera });
   });
 
   renderer.render(page.scene, camera);
 }
 
-function _getAssetsInfo($images: NodeListOf<Element>) {
-  [...$images].map((image: Element) => {
+function _getAssetsInfo(images: NodeListOf<Element>) {
+  [...images].map((image: Element) => {
     const { src, naturalWidth, naturalHeight } = image as HTMLImageElement;
 
     page.assetsInfo.src = src;
@@ -117,8 +132,8 @@ function _getAssetsInfo($images: NodeListOf<Element>) {
   });
 }
 
-async function _loadImage($images: NodeListOf<Element>) {
-  const imageTexture = [...$images].map((image: Element, i: number) => {
+async function _loadImage(images: NodeListOf<Element>) {
+  const imageTexture = [...images].map((image: Element, i: number) => {
     const { src } = image as HTMLImageElement;
 
     return new Promise((resolve, reject) => {
@@ -148,11 +163,15 @@ async function _loadImage($images: NodeListOf<Element>) {
 
 function _loadNoiseImage() {}
 
-function _onResize(
-  canvas: HTMLCanvasElement,
-  renderer: THREE.WebGLRenderer,
-  camera: THREE.PerspectiveCamera,
-) {
+function _onResize({
+  canvas,
+  renderer,
+  camera,
+}: {
+  canvas: HTMLCanvasElement;
+  renderer: THREE.WebGLRenderer;
+  camera: THREE.PerspectiveCamera;
+}) {
   let timeoutID: number | undefined = undefined;
 
   timeoutID = setTimeout(() => {

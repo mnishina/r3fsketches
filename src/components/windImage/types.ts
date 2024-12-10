@@ -28,5 +28,11 @@ export interface Page {
   noiseAssets: [string, string];
   scene: THREE.Scene;
   textureLoader: THREE.TextureLoader;
-  init: (canvas: HTMLCanvasElement, $image: NodeListOf<Element>) => void;
+  init: ({
+    canvas,
+    images,
+  }: {
+    canvas: HTMLCanvasElement;
+    images: NodeListOf<Element>;
+  }) => void;
 }
