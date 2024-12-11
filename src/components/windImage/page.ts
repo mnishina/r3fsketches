@@ -2,6 +2,8 @@ import * as THREE from "three";
 
 import type { Page, Asset } from "./types";
 
+import loader from "./loader";
+
 import vertexShader from "./shaders/vertexShader.glsl";
 import fragmentShader from "./shaders/fragmentShader.glsl";
 
@@ -57,11 +59,11 @@ async function init({
   );
   camera.position.set(0, 0, 5);
 
-  await _getAssetsInfo(images);
+  // await _getAssetsInfo(images);
 
-  console.log(page.assets);
+  // console.log(page.assets);
 
-  _createMesh(page.assets);
+  _createMesh(images);
 
   _tick({ renderer, camera });
 
@@ -70,36 +72,65 @@ async function init({
   });
 }
 
-function _createMesh(assets: Asset[]) {
+async function _createMesh(images: NodeListOf<Element>) {
   const tempNum: number = 200;
 
-  assets.forEach((asset) => {
-    if (asset.width !== undefined && asset.height !== undefined) {
-      const { imageTexture, noiseTexture, width, height } = asset;
+  const promise = [...images].map(async (image) => {
+    const imageRect = image.getBoundingClientRect();
 
-      const geometry = new THREE.PlaneGeometry(
-        width / tempNum,
-        height / tempNum,
-        page.numbers.geometrySegments,
-        page.numbers.geometrySegments,
-      );
+    const src = image.getAttribute("src");
+    const imageTexture = loader.allAssets?.get(src);
 
-      const material = new THREE.ShaderMaterial({
-        // wireframe: true,
-        vertexShader,
-        fragmentShader,
-        uniforms: {
-          uImageTexture: { value: imageTexture },
-          uNoiseTexture: { value: noiseTexture },
-        },
-      });
+    const geometry = new THREE.PlaneGeometry(
+      imageRect.width / tempNum,
+      imageRect.height / tempNum,
+      page.numbers.geometrySegments,
+      page.numbers.geometrySegments,
+    );
 
-      const mesh = new THREE.Mesh(geometry, material);
-      page.scene.add(mesh);
-    } else {
-      console.warn("undefined image width and height");
-    }
+    const material = new THREE.ShaderMaterial({
+      // wireframe: true,
+      vertexShader,
+      fragmentShader,
+      uniforms: {
+        uImageTexture: { value: imageTexture },
+        uNoiseTexture: { value: imageTexture },
+      },
+    });
+
+    const mesh = new THREE.Mesh(geometry, material);
+    page.scene.add(mesh);
   });
+
+  await Promise.all(promise);
+
+  // assets.forEach((asset) => {
+  //   if (asset.width !== undefined && asset.height !== undefined) {
+  //     const { imageTexture, noiseTexture, width, height } = asset;
+
+  //     const geometry = new THREE.PlaneGeometry(
+  //       width / tempNum,
+  //       height / tempNum,
+  //       page.numbers.geometrySegments,
+  //       page.numbers.geometrySegments,
+  //     );
+
+  //     const material = new THREE.ShaderMaterial({
+  //       // wireframe: true,
+  //       vertexShader,
+  //       fragmentShader,
+  //       uniforms: {
+  //         uImageTexture: { value: imageTexture },
+  //         uNoiseTexture: { value: noiseTexture },
+  //       },
+  //     });
+
+  //     const mesh = new THREE.Mesh(geometry, material);
+  //     page.scene.add(mesh);
+  //   } else {
+  //     console.warn("undefined image width and height");
+  //   }
+  // });
 }
 
 function _tick({
