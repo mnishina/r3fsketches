@@ -10,15 +10,13 @@ const page: Page = {
     canvasWidth: undefined,
     canvasHeight: undefined,
     devicePixelRatio: Math.min(window.devicePixelRatio, 2),
+    geometrySegments: 32,
     camera: {
       fov: 75,
       aspectRatio: undefined,
       near: 0.1,
       far: 1000,
     },
-  },
-  uniforms: {
-    uTexture: { value: new THREE.Texture() },
   },
   assets: [],
   noiseAssets: ["/noise.png", "/perlin.png"],
@@ -62,11 +60,11 @@ async function init({
 
   try {
     await _loadImage(images);
-    _loadNoiseImage(page.noiseAssets);
+    await _loadNoiseImage(page.noiseAssets);
 
     _createMesh();
 
-    console.log("aaa");
+    console.log(page.assets);
 
     _tick({ renderer, camera });
   } catch (error) {
@@ -79,24 +77,30 @@ async function init({
 }
 
 function _createMesh() {
-  const geometry = new THREE.PlaneGeometry(1, 1, 32, 32);
-  const material = new THREE.ShaderMaterial({
-    // wireframe: true,
-    vertexShader,
-    fragmentShader,
-    uniforms: page.uniforms,
-  });
-
   const tempNum: number = 1000;
 
   page.assets.forEach((asset) => {
     if (asset.width !== undefined && asset.height !== undefined) {
-      const { imageTexture, width, height } = asset;
+      const { imageTexture, noiseTexture, width, height } = asset;
 
-      material.uniforms.uTexture.value = imageTexture;
+      const geometry = new THREE.PlaneGeometry(
+        width / tempNum,
+        height / tempNum,
+        page.numbers.geometrySegments,
+        page.numbers.geometrySegments,
+      );
+
+      const material = new THREE.ShaderMaterial({
+        // wireframe: true,
+        vertexShader,
+        fragmentShader,
+        uniforms: {
+          uImageTexture: { value: imageTexture },
+          uNoiseTexture: { value: noiseTexture },
+        },
+      });
 
       const mesh = new THREE.Mesh(geometry, material);
-      mesh.scale.set(width / tempNum, height / tempNum, 0);
       page.scene.add(mesh);
     } else {
       console.warn("undefined image width and height");
@@ -137,7 +141,7 @@ function _getAssetsInfo(images: NodeListOf<Element>) {
 async function _loadImage(images: NodeListOf<Element>) {
   console.log("_loadImage");
 
-  const imageTexture = [...images].map((image: Element, i: number) => {
+  const imageTexture = [...images].map(async (image: Element, i: number) => {
     const { src } = image as HTMLImageElement;
 
     return new Promise((resolve, reject) => {
@@ -166,14 +170,34 @@ async function _loadImage(images: NodeListOf<Element>) {
   }
 }
 
-function _loadNoiseImage(noiseAssets: string[]) {
+async function _loadNoiseImage(noiseAssets: string[]) {
   console.log("_loadNoiseImage");
 
-  // const noiseTexture = assets.map((asset) => {
-  //   return new Promise((resolve, reject) => {
-  //     page.textureLoader.load()
-  //   });
-  // });
+  const noiseTexture = noiseAssets.map(async (asset) => {
+    return new Promise((resolve, reject) => {
+      page.textureLoader.load(
+        asset,
+        (asset) => {
+          for (let i = 0; i < page.assets.length; i++) {
+            page.assets[i].noiseTexture = asset;
+          }
+
+          resolve(asset);
+        },
+        undefined,
+        (error) => {
+          reject(error);
+        },
+      );
+    });
+  });
+
+  try {
+    return await Promise.all(noiseTexture);
+  } catch (error) {
+    console.error("Error loading images", error);
+    throw error;
+  }
 }
 
 function _onResize({
