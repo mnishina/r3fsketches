@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-import type { Page } from "./types";
+import type { Page, Asset } from "./types";
 
 import vertexShader from "./shaders/vertexShader.glsl";
 import fragmentShader from "./shaders/fragmentShader.glsl";
@@ -43,6 +43,7 @@ async function init({
   const renderer = new THREE.WebGLRenderer({
     canvas: canvas,
     antialias: true,
+    alpha: true,
   });
   renderer.setSize(page.numbers.canvasWidth, page.numbers.canvasHeight, false);
   renderer.setPixelRatio(page.numbers.devicePixelRatio);
@@ -56,30 +57,23 @@ async function init({
   );
   camera.position.set(0, 0, 5);
 
-  _getAssetsInfo(images);
+  await _getAssetsInfo(images);
 
-  try {
-    await _loadImage(images);
-    await _loadNoiseImage(page.noiseAssets);
+  console.log(page.assets);
 
-    _createMesh();
+  _createMesh(page.assets);
 
-    console.log(page.assets);
-
-    _tick({ renderer, camera });
-  } catch (error) {
-    console.error("Failed to initialize:", error);
-  }
+  _tick({ renderer, camera });
 
   window.addEventListener("resize", () => {
     _onResize({ canvas, renderer, camera });
   });
 }
 
-function _createMesh() {
-  const tempNum: number = 1000;
+function _createMesh(assets: Asset[]) {
+  const tempNum: number = 200;
 
-  page.assets.forEach((asset) => {
+  assets.forEach((asset) => {
     if (asset.width !== undefined && asset.height !== undefined) {
       const { imageTexture, noiseTexture, width, height } = asset;
 
@@ -122,80 +116,62 @@ function _tick({
   renderer.render(page.scene, camera);
 }
 
-function _getAssetsInfo(images: NodeListOf<Element>) {
+async function _getAssetsInfo(images: NodeListOf<Element>): Promise<void> {
   console.log("_getAssetsInfo");
 
-  [...images].map((image: Element) => {
-    const { src, naturalWidth, naturalHeight } = image as HTMLImageElement;
+  try {
+    const assetsInfo = await Promise.all(
+      [...images].map(async (image) => {
+        const { src, naturalWidth, naturalHeight } = image as HTMLImageElement;
+        const imageTexture = await _setImageTexture(image);
+        imageTexture.magFilter = THREE.LinearFilter;
+        imageTexture.minFilter = THREE.LinearFilter;
+        imageTexture.needsUpdate = false;
 
-    page.assets.push({
-      src: src,
-      width: naturalWidth,
-      height: naturalHeight,
-      imageTexture: undefined,
-      noiseTexture: undefined,
-    });
-  });
+        const noiseTexture = await _setNoiseTexture(page.noiseAssets);
+        noiseTexture.magFilter = THREE.LinearFilter;
+        noiseTexture.minFilter = THREE.LinearFilter;
+        noiseTexture.needsUpdate = false;
+
+        return {
+          src,
+          width: naturalWidth,
+          height: naturalHeight,
+          imageTexture,
+          noiseTexture,
+        };
+      }),
+    );
+
+    page.assets.push(...assetsInfo);
+  } catch (error) {
+    console.error("画像の読み込みに失敗しました:", error);
+  }
 }
 
-async function _loadImage(images: NodeListOf<Element>) {
-  console.log("_loadImage");
-
-  const imageTexture = [...images].map(async (image: Element, i: number) => {
-    const { src } = image as HTMLImageElement;
-
-    return new Promise((resolve, reject) => {
-      page.textureLoader.load(
-        src,
-        (image) => {
-          page.assets[i].imageTexture = image;
-          console.log("imageTexture loaded.");
-
-          resolve(image);
-        },
-        undefined,
-        (err) => {
-          console.error(`Load failed: ${src}`);
-          reject(err);
-        },
-      );
-    });
-  });
+async function _setImageTexture(image: Element): Promise<THREE.Texture> {
+  console.log("_setImageTexture");
+  const { src } = image as HTMLImageElement;
 
   try {
-    return await Promise.all(imageTexture);
+    return page.textureLoader.loadAsync(src);
   } catch (error) {
-    console.error("Error loading images", error);
+    console.error(`_setImageTexture: Load failed: ${src}`, error);
     throw error;
   }
 }
 
-async function _loadNoiseImage(noiseAssets: string[]) {
-  console.log("_loadNoiseImage");
-
-  const noiseTexture = noiseAssets.map(async (asset) => {
-    return new Promise((resolve, reject) => {
-      page.textureLoader.load(
-        asset,
-        (asset) => {
-          for (let i = 0; i < page.assets.length; i++) {
-            page.assets[i].noiseTexture = asset;
-          }
-
-          resolve(asset);
-        },
-        undefined,
-        (error) => {
-          reject(error);
-        },
-      );
-    });
-  });
+async function _setNoiseTexture(noiseAssets: string[]) {
+  console.log("_setNoiseTexture");
+  const randomNum = Math.floor(Math.random() * noiseAssets.length);
 
   try {
-    return await Promise.all(noiseTexture);
+    return page.textureLoader.loadAsync(noiseAssets[randomNum]);
   } catch (error) {
-    console.error("Error loading images", error);
+    console.error(
+      `_setNoiseTexture: Load failed: ${noiseAssets[randomNum]}`,
+      error,
+    );
     throw error;
   }
 }
