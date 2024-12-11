@@ -20,13 +20,6 @@ const page: Page = {
   uniforms: {
     uTexture: { value: new THREE.Texture() },
   },
-  assetsInfo: {
-    imageTexture: undefined,
-    noiseTexture: undefined,
-    src: undefined,
-    width: undefined,
-    height: undefined,
-  },
   assets: [],
   noiseAssets: ["/noise.png", "/perlin.png"],
   scene: new THREE.Scene(),
@@ -67,14 +60,18 @@ async function init({
 
   _getAssetsInfo(images);
 
-  await _loadImage(images);
-  _loadNoiseImage(page.noiseAssets);
+  try {
+    await _loadImage(images);
+    _loadNoiseImage(page.noiseAssets);
 
-  _createMesh();
+    _createMesh();
 
-  console.log("aaa");
+    console.log("aaa");
 
-  _tick({ renderer, camera });
+    _tick({ renderer, camera });
+  } catch (error) {
+    console.error("Failed to initialize:", error);
+  }
 
   window.addEventListener("resize", () => {
     _onResize({ canvas, renderer, camera });
@@ -127,11 +124,13 @@ function _getAssetsInfo(images: NodeListOf<Element>) {
   [...images].map((image: Element) => {
     const { src, naturalWidth, naturalHeight } = image as HTMLImageElement;
 
-    page.assetsInfo.src = src;
-    page.assetsInfo.width = naturalWidth;
-    page.assetsInfo.height = naturalHeight;
-
-    page.assets.push(page.assetsInfo);
+    page.assets.push({
+      src: src,
+      width: naturalWidth,
+      height: naturalHeight,
+      imageTexture: undefined,
+      noiseTexture: undefined,
+    });
   });
 }
 
