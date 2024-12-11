@@ -122,6 +122,8 @@ function _tick({
 }
 
 function _getAssetsInfo(images: NodeListOf<Element>) {
+  console.log("_getAssetsInfo");
+
   [...images].map((image: Element) => {
     const { src, naturalWidth, naturalHeight } = image as HTMLImageElement;
 
@@ -134,6 +136,8 @@ function _getAssetsInfo(images: NodeListOf<Element>) {
 }
 
 async function _loadImage(images: NodeListOf<Element>) {
+  console.log("_loadImage");
+
   const imageTexture = [...images].map((image: Element, i: number) => {
     const { src } = image as HTMLImageElement;
 
@@ -142,6 +146,7 @@ async function _loadImage(images: NodeListOf<Element>) {
         src,
         (image) => {
           page.assets[i].imageTexture = image;
+          console.log("imageTexture loaded.");
 
           resolve(image);
         },
@@ -163,7 +168,7 @@ async function _loadImage(images: NodeListOf<Element>) {
 }
 
 function _loadNoiseImage(noiseAssets: string[]) {
-  console.log(noiseAssets);
+  console.log("_loadNoiseImage");
 
   // const noiseTexture = assets.map((asset) => {
   //   return new Promise((resolve, reject) => {
