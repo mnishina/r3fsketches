@@ -5,15 +5,13 @@ export interface Page {
     canvasWidth: number | undefined;
     canvasHeight: number | undefined;
     devicePixelRatio: number;
+    geometrySegments: number;
     camera: {
       fov: number;
       aspectRatio: number | undefined;
       near: number;
       far: number;
     };
-  };
-  uniforms: {
-    uTexture: { value: THREE.Texture };
   };
   assets: {
     imageTexture: THREE.Texture | undefined;

@@ -10,15 +10,13 @@ const page: Page = {
     canvasWidth: undefined,
     canvasHeight: undefined,
     devicePixelRatio: Math.min(window.devicePixelRatio, 2),
+    geometrySegments: 32,
     camera: {
       fov: 75,
       aspectRatio: undefined,
       near: 0.1,
       far: 1000,
     },
-  },
-  uniforms: {
-    uTexture: { value: new THREE.Texture() },
   },
   assets: [],
   noiseAssets: ["/noise.png", "/perlin.png"],
@@ -66,7 +64,7 @@ async function init({
 
     _createMesh();
 
-    console.log("aaa");
+    console.log(page.assets);
 
     _tick({ renderer, camera });
   } catch (error) {
@@ -79,24 +77,29 @@ async function init({
 }
 
 function _createMesh() {
-  const geometry = new THREE.PlaneGeometry(1, 1, 32, 32);
-  const material = new THREE.ShaderMaterial({
-    // wireframe: true,
-    vertexShader,
-    fragmentShader,
-    uniforms: page.uniforms,
-  });
-
   const tempNum: number = 1000;
 
   page.assets.forEach((asset) => {
     if (asset.width !== undefined && asset.height !== undefined) {
       const { imageTexture, width, height } = asset;
 
-      material.uniforms.uTexture.value = imageTexture;
+      const geometry = new THREE.PlaneGeometry(
+        width / tempNum,
+        height / tempNum,
+        page.numbers.geometrySegments,
+        page.numbers.geometrySegments,
+      );
+
+      const material = new THREE.ShaderMaterial({
+        // wireframe: true,
+        vertexShader,
+        fragmentShader,
+        uniforms: {
+          uTexture: { value: imageTexture },
+        },
+      });
 
       const mesh = new THREE.Mesh(geometry, material);
-      mesh.scale.set(width / tempNum, height / tempNum, 0);
       page.scene.add(mesh);
     } else {
       console.warn("undefined image width and height");
