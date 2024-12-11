@@ -60,7 +60,7 @@ async function init({
 
   try {
     await _loadImage(images);
-    _loadNoiseImage(page.noiseAssets);
+    await _loadNoiseImage(page.noiseAssets);
 
     _createMesh();
 
@@ -81,7 +81,7 @@ function _createMesh() {
 
   page.assets.forEach((asset) => {
     if (asset.width !== undefined && asset.height !== undefined) {
-      const { imageTexture, width, height } = asset;
+      const { imageTexture, noiseTexture, width, height } = asset;
 
       const geometry = new THREE.PlaneGeometry(
         width / tempNum,
@@ -95,7 +95,8 @@ function _createMesh() {
         vertexShader,
         fragmentShader,
         uniforms: {
-          uTexture: { value: imageTexture },
+          uImageTexture: { value: imageTexture },
+          uNoiseTexture: { value: noiseTexture },
         },
       });
 
@@ -140,7 +141,7 @@ function _getAssetsInfo(images: NodeListOf<Element>) {
 async function _loadImage(images: NodeListOf<Element>) {
   console.log("_loadImage");
 
-  const imageTexture = [...images].map((image: Element, i: number) => {
+  const imageTexture = [...images].map(async (image: Element, i: number) => {
     const { src } = image as HTMLImageElement;
 
     return new Promise((resolve, reject) => {
@@ -169,14 +170,34 @@ async function _loadImage(images: NodeListOf<Element>) {
   }
 }
 
-function _loadNoiseImage(noiseAssets: string[]) {
+async function _loadNoiseImage(noiseAssets: string[]) {
   console.log("_loadNoiseImage");
 
-  // const noiseTexture = assets.map((asset) => {
-  //   return new Promise((resolve, reject) => {
-  //     page.textureLoader.load()
-  //   });
-  // });
+  const noiseTexture = noiseAssets.map(async (asset) => {
+    return new Promise((resolve, reject) => {
+      page.textureLoader.load(
+        asset,
+        (asset) => {
+          for (let i = 0; i < page.assets.length; i++) {
+            page.assets[i].noiseTexture = asset;
+          }
+
+          resolve(asset);
+        },
+        undefined,
+        (error) => {
+          reject(error);
+        },
+      );
+    });
+  });
+
+  try {
+    return await Promise.all(noiseTexture);
+  } catch (error) {
+    console.error("Error loading images", error);
+    throw error;
+  }
 }
 
 function _onResize({
