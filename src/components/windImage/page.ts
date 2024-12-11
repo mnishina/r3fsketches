@@ -123,6 +123,7 @@ async function _getAssetsInfo(images: NodeListOf<Element>): Promise<void> {
     const assetsInfo = await Promise.all(
       [...images].map(async (image) => {
         const { src, naturalWidth, naturalHeight } = image as HTMLImageElement;
+        const { width, height } = image.getBoundingClientRect();
         const imageTexture = await _setImageTexture(image);
         imageTexture.magFilter = THREE.LinearFilter;
         imageTexture.minFilter = THREE.LinearFilter;
@@ -135,8 +136,8 @@ async function _getAssetsInfo(images: NodeListOf<Element>): Promise<void> {
 
         return {
           src,
-          width: naturalWidth,
-          height: naturalHeight,
+          width,
+          height,
           imageTexture,
           noiseTexture,
         };
