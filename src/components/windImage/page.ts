@@ -20,13 +20,6 @@ const page: Page = {
   uniforms: {
     uTexture: { value: new THREE.Texture() },
   },
-  assetsInfo: {
-    imageTexture: undefined,
-    noiseTexture: undefined,
-    src: undefined,
-    width: undefined,
-    height: undefined,
-  },
   assets: [],
   noiseAssets: ["/noise.png", "/perlin.png"],
   scene: new THREE.Scene(),
@@ -67,14 +60,18 @@ async function init({
 
   _getAssetsInfo(images);
 
-  await _loadImage(images);
-  _loadNoiseImage(page.noiseAssets);
+  try {
+    await _loadImage(images);
+    _loadNoiseImage(page.noiseAssets);
 
-  _createMesh();
+    _createMesh();
 
-  console.log("aaa");
+    console.log("aaa");
 
-  _tick({ renderer, camera });
+    _tick({ renderer, camera });
+  } catch (error) {
+    console.error("Failed to initialize:", error);
+  }
 
   window.addEventListener("resize", () => {
     _onResize({ canvas, renderer, camera });
@@ -122,18 +119,24 @@ function _tick({
 }
 
 function _getAssetsInfo(images: NodeListOf<Element>) {
+  console.log("_getAssetsInfo");
+
   [...images].map((image: Element) => {
     const { src, naturalWidth, naturalHeight } = image as HTMLImageElement;
 
-    page.assetsInfo.src = src;
-    page.assetsInfo.width = naturalWidth;
-    page.assetsInfo.height = naturalHeight;
-
-    page.assets.push(page.assetsInfo);
+    page.assets.push({
+      src: src,
+      width: naturalWidth,
+      height: naturalHeight,
+      imageTexture: undefined,
+      noiseTexture: undefined,
+    });
   });
 }
 
 async function _loadImage(images: NodeListOf<Element>) {
+  console.log("_loadImage");
+
   const imageTexture = [...images].map((image: Element, i: number) => {
     const { src } = image as HTMLImageElement;
 
@@ -142,6 +145,7 @@ async function _loadImage(images: NodeListOf<Element>) {
         src,
         (image) => {
           page.assets[i].imageTexture = image;
+          console.log("imageTexture loaded.");
 
           resolve(image);
         },
@@ -163,7 +167,7 @@ async function _loadImage(images: NodeListOf<Element>) {
 }
 
 function _loadNoiseImage(noiseAssets: string[]) {
-  console.log(noiseAssets);
+  console.log("_loadNoiseImage");
 
   // const noiseTexture = assets.map((asset) => {
   //   return new Promise((resolve, reject) => {

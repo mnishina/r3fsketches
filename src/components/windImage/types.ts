@@ -1,13 +1,5 @@
 import * as THREE from "three";
 
-interface assetsInfo {
-  imageTexture: THREE.Texture | undefined;
-  noiseTexture: THREE.Texture | undefined;
-  src: string | undefined;
-  width: number | undefined;
-  height: number | undefined;
-}
-
 export interface Page {
   numbers: {
     canvasWidth: number | undefined;
@@ -23,8 +15,13 @@ export interface Page {
   uniforms: {
     uTexture: { value: THREE.Texture };
   };
-  assetsInfo: assetsInfo;
-  assets: assetsInfo[];
+  assets: {
+    imageTexture: THREE.Texture | undefined;
+    noiseTexture: THREE.Texture | undefined;
+    src: string | undefined;
+    width: number | undefined;
+    height: number | undefined;
+  }[];
   noiseAssets: [string, string];
   scene: THREE.Scene;
   textureLoader: THREE.TextureLoader;
