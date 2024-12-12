@@ -9,7 +9,14 @@ async function init() {
     "[data-webgl-image]",
   ) as NodeListOf<Element>;
 
-  await loader.getAllAssets(images);
+  const imageAssets = document.querySelectorAll(
+    "[data-imageTexture]",
+  ) as NodeListOf<Element>;
+  const noiseAssets = ["/noise.png", "/perlin.png"];
+
+  await loader.init(imageAssets, noiseAssets);
+
+  // await loader.getAllAssets(images);
   // console.log("index >");
   // console.log(loader.allAssets);
   page.init({ canvas, images });
