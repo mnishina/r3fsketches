@@ -1,60 +1,75 @@
 import * as THREE from "three";
 
+interface Asset {
+  imageAssets: NodeListOf<Element>;
+  noiseAssets: string[];
+}
+
+interface collectAsset {
+  imageRect: DOMRect | null;
+  imageAsset: string | null;
+  noiseAsset: string | null;
+  imageTexture: THREE.Texture | null;
+  noiseTexture: THREE.Texture | null;
+}
+
 interface Loader {
-  allAssets:
-    | {
-        imageAsset: string | null;
-        noiseAsset: string | null;
-        imageTexture: THREE.Texture | null;
-        noiseTexture: THREE.Texture | null;
-      }[]
-    | null;
-  init: (
-    imageAssets: NodeListOf<Element>,
-    noiseAssets: string[],
-  ) => Promise<void>;
+  allAsset: collectAsset[] | null;
+  init: () => Asset;
+  collectAllAsset: ({ imageAssets, noiseAssets }: Asset) => Promise<void>;
+  getAllAsset: () => collectAsset[] | null;
 }
 
 const textureLoader = new THREE.TextureLoader();
 const loader: Loader = {
-  allAssets: null,
+  allAsset: null,
   init,
+  collectAllAsset,
+  getAllAsset,
 };
 
-async function init(imageAssets: NodeListOf<Element>, noiseAssets: string[]) {
-  console.log(imageAssets, noiseAssets);
+function init() {
+  const imageAssets = document.querySelectorAll(
+    "[data-imageTexture]",
+  ) as NodeListOf<Element>;
+  const noiseAssets = ["/noise.png", "/perlin.png"];
 
+  return { imageAssets, noiseAssets };
+}
+
+async function collectAllAsset({
+  imageAssets,
+  noiseAssets,
+}: Asset): Promise<void> {
   //すべてのアセットを収集する
-  const allAssets = [];
+  const allAsset = [];
 
   for (const image of imageAssets) {
+    const imageRect = image.getBoundingClientRect();
     const src = image.getAttribute("src");
 
-    const texture: {
-      imageAsset: string | null;
-      noiseAsset: string | null;
-      imageTexture: THREE.Texture | null;
-      noiseTexture: THREE.Texture | null;
-    } = {
+    const asset: collectAsset = {
+      imageRect: null,
       imageAsset: null,
       noiseAsset: null,
       imageTexture: null,
       noiseTexture: null,
     };
-    texture.imageAsset = src;
+    asset.imageRect = imageRect;
+    asset.imageAsset = src;
 
-    allAssets.push(texture);
+    allAsset.push(asset);
   }
 
-  allAssets.forEach((texture) => {
+  allAsset.forEach((asset) => {
     const randomNum = Math.floor(Math.random() * noiseAssets.length);
 
-    texture.noiseAsset = noiseAssets[randomNum];
+    asset.noiseAsset = noiseAssets[randomNum];
   });
 
   //収集したアセットからtextureを読み込み設定する
   const texturePromise = [];
-  for (const asset of allAssets) {
+  for (const asset of allAsset) {
     if (!asset.imageAsset || !asset.noiseAsset) return;
 
     const imageTexture = _loadTexture(asset.imageAsset).then((texture) => {
@@ -70,14 +85,17 @@ async function init(imageAssets: NodeListOf<Element>, noiseAssets: string[]) {
 
   await Promise.all(texturePromise);
 
-  console.log(allAssets);
-  loader.allAssets = allAssets;
+  loader.allAsset = allAsset;
 }
 
 async function _loadTexture(src: string) {
   const texture = await textureLoader.loadAsync(src);
 
   return texture;
+}
+
+function getAllAsset() {
+  return loader.allAsset;
 }
 
 export default loader;

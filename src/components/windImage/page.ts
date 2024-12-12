@@ -72,7 +72,7 @@ async function _createMesh(imageAssets: NodeListOf<Element>) {
     const imageRect = image.getBoundingClientRect();
 
     const src = image.getAttribute("src");
-    const matchedAsset = loader.allAssets?.find(
+    const matchedAsset = loader.allAsset?.find(
       (asset) => asset.imageAsset === src,
     );
     if (!matchedAsset?.imageTexture || !matchedAsset?.noiseTexture) return;
