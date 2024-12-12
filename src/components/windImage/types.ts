@@ -1,13 +1,5 @@
 import * as THREE from "three";
 
-export interface Asset {
-  imageTexture: THREE.Texture | undefined;
-  noiseTexture: THREE.Texture | undefined;
-  src: string | undefined;
-  width: number | undefined;
-  height: number | undefined;
-}
-
 export interface Page {
   numbers: {
     canvasWidth: number | undefined;
@@ -21,15 +13,12 @@ export interface Page {
       far: number;
     };
   };
-  assets: Asset[];
-  noiseAssets: [string, string];
   scene: THREE.Scene;
-  textureLoader: THREE.TextureLoader;
   init: ({
     canvas,
-    images,
+    imageAssets,
   }: {
     canvas: HTMLCanvasElement;
-    images: NodeListOf<Element>;
+    imageAssets: NodeListOf<Element>;
   }) => void;
 }

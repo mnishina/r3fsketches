@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-import type { Page, Asset } from "./types";
+import type { Page } from "./types";
 
 import loader from "./loader";
 
@@ -20,19 +20,16 @@ const page: Page = {
       far: 1000,
     },
   },
-  assets: [],
-  noiseAssets: ["/noise.png", "/perlin.png"],
   scene: new THREE.Scene(),
-  textureLoader: new THREE.TextureLoader(),
   init,
 };
 
 async function init({
   canvas,
-  images,
+  imageAssets,
 }: {
   canvas: HTMLCanvasElement;
-  images: NodeListOf<Element>;
+  imageAssets: NodeListOf<Element>;
 }) {
   console.log("page init");
 
@@ -59,11 +56,7 @@ async function init({
   );
   camera.position.set(0, 0, 5);
 
-  // await _getAssetsInfo(images);
-
-  // console.log(page.assets);
-
-  _createMesh(images);
+  _createMesh(imageAssets);
 
   _tick({ renderer, camera });
 
@@ -72,10 +65,10 @@ async function init({
   });
 }
 
-async function _createMesh(images: NodeListOf<Element>) {
+async function _createMesh(imageAssets: NodeListOf<Element>) {
   const tempNum: number = 200;
 
-  const promise = [...images].map(async (image) => {
+  const promise = [...imageAssets].map(async (image) => {
     const imageRect = image.getBoundingClientRect();
 
     const src = image.getAttribute("src");
@@ -108,34 +101,6 @@ async function _createMesh(images: NodeListOf<Element>) {
   });
 
   await Promise.all(promise);
-
-  // assets.forEach((asset) => {
-  //   if (asset.width !== undefined && asset.height !== undefined) {
-  //     const { imageTexture, noiseTexture, width, height } = asset;
-
-  //     const geometry = new THREE.PlaneGeometry(
-  //       width / tempNum,
-  //       height / tempNum,
-  //       page.numbers.geometrySegments,
-  //       page.numbers.geometrySegments,
-  //     );
-
-  //     const material = new THREE.ShaderMaterial({
-  //       // wireframe: true,
-  //       vertexShader,
-  //       fragmentShader,
-  //       uniforms: {
-  //         uImageTexture: { value: imageTexture },
-  //         uNoiseTexture: { value: noiseTexture },
-  //       },
-  //     });
-
-  //     const mesh = new THREE.Mesh(geometry, material);
-  //     page.scene.add(mesh);
-  //   } else {
-  //     console.warn("undefined image width and height");
-  //   }
-  // });
 }
 
 function _tick({
@@ -150,67 +115,6 @@ function _tick({
   });
 
   renderer.render(page.scene, camera);
-}
-
-async function _getAssetsInfo(images: NodeListOf<Element>): Promise<void> {
-  console.log("_getAssetsInfo");
-
-  try {
-    const assetsInfo = await Promise.all(
-      [...images].map(async (image) => {
-        const { src, naturalWidth, naturalHeight } = image as HTMLImageElement;
-        const { width, height } = image.getBoundingClientRect();
-        const imageTexture = await _setImageTexture(image);
-        imageTexture.magFilter = THREE.LinearFilter;
-        imageTexture.minFilter = THREE.LinearFilter;
-        imageTexture.needsUpdate = false;
-
-        const noiseTexture = await _setNoiseTexture(page.noiseAssets);
-        noiseTexture.magFilter = THREE.LinearFilter;
-        noiseTexture.minFilter = THREE.LinearFilter;
-        noiseTexture.needsUpdate = false;
-
-        return {
-          src,
-          width,
-          height,
-          imageTexture,
-          noiseTexture,
-        };
-      }),
-    );
-
-    page.assets.push(...assetsInfo);
-  } catch (error) {
-    console.error("画像の読み込みに失敗しました:", error);
-  }
-}
-
-async function _setImageTexture(image: Element): Promise<THREE.Texture> {
-  console.log("_setImageTexture");
-  const { src } = image as HTMLImageElement;
-
-  try {
-    return page.textureLoader.loadAsync(src);
-  } catch (error) {
-    console.error(`_setImageTexture: Load failed: ${src}`, error);
-    throw error;
-  }
-}
-
-async function _setNoiseTexture(noiseAssets: string[]) {
-  console.log("_setNoiseTexture");
-  const randomNum = Math.floor(Math.random() * noiseAssets.length);
-
-  try {
-    return page.textureLoader.loadAsync(noiseAssets[randomNum]);
-  } catch (error) {
-    console.error(
-      `_setNoiseTexture: Load failed: ${noiseAssets[randomNum]}`,
-      error,
-    );
-    throw error;
-  }
 }
 
 function _onResize({

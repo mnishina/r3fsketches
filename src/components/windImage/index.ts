@@ -5,10 +5,6 @@ init();
 
 async function init() {
   const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
-  const images = document.querySelectorAll(
-    "[data-webgl-image]",
-  ) as NodeListOf<Element>;
-
   const imageAssets = document.querySelectorAll(
     "[data-imageTexture]",
   ) as NodeListOf<Element>;
@@ -16,8 +12,5 @@ async function init() {
 
   await loader.init(imageAssets, noiseAssets);
 
-  // await loader.getAllAssets(images);
-  // console.log("index >");
-  // console.log(loader.allAssets);
-  page.init({ canvas, images });
+  page.init({ canvas, imageAssets });
 }
