@@ -82,6 +82,8 @@ async function _createMesh(images: NodeListOf<Element>) {
     const matchedAsset = loader.allAssets?.find(
       (asset) => asset.imageAsset === src,
     );
+    if (!matchedAsset?.imageTexture || !matchedAsset?.noiseTexture) return;
+
     const { imageTexture, noiseTexture } = matchedAsset;
 
     const geometry = new THREE.PlaneGeometry(

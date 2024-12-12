@@ -1,9 +1,19 @@
 import * as THREE from "three";
 
 interface Loader {
-  allAssets: {}[] | null;
-  init: () => Promise<void>;
-  getAllAssets: (images: NodeListOf<Element>) => Promise<void>;
+  allAssets:
+    | {
+        imageAsset: string | null;
+        noiseAsset: string | null;
+        imageTexture: THREE.Texture | null;
+        noiseTexture: THREE.Texture | null;
+      }[]
+    | null;
+  init: (
+    imageAssets: NodeListOf<Element>,
+    noiseAssets: string[],
+  ) => Promise<void>;
+  // getAllAssets: (images: NodeListOf<Element>) => Promise<void>;
 }
 
 const textureLoader = new THREE.TextureLoader();
@@ -13,7 +23,7 @@ const loader: Loader = {
   // getAllAssets,
 };
 
-async function init(imageAssets, noiseAssets) {
+async function init(imageAssets: NodeListOf<Element>, noiseAssets: string[]) {
   console.log(imageAssets, noiseAssets);
 
   //すべてのアセットを収集する
@@ -22,7 +32,17 @@ async function init(imageAssets, noiseAssets) {
   for (const image of imageAssets) {
     const src = image.getAttribute("src");
 
-    const texture = {};
+    const texture: {
+      imageAsset: string | null;
+      noiseAsset: string | null;
+      imageTexture: THREE.Texture | null;
+      noiseTexture: THREE.Texture | null;
+    } = {
+      imageAsset: null,
+      noiseAsset: null,
+      imageTexture: null,
+      noiseTexture: null,
+    };
     texture.imageAsset = src;
 
     allAssets.push(texture);
@@ -38,6 +58,8 @@ async function init(imageAssets, noiseAssets) {
   //収集したアセットからtextureを読み込み設定する
   const texturePromise = [];
   for (const asset of allAssets) {
+    if (!asset.imageAsset || !asset.noiseAsset) return;
+
     const imageTexture = _loadTexture(asset.imageAsset).then((texture) => {
       asset.imageTexture = texture;
     });
