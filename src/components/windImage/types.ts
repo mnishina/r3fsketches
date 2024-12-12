@@ -1,5 +1,25 @@
 import * as THREE from "three";
 
+export interface Asset {
+  imageAssets: NodeListOf<Element>;
+  noiseAssets: string[];
+}
+
+export interface CollectAsset {
+  imageRect: DOMRect | null;
+  imageAsset: string | null;
+  noiseAsset: string | null;
+  imageTexture: THREE.Texture | null;
+  noiseTexture: THREE.Texture | null;
+}
+
+export interface Loader {
+  allAsset: CollectAsset[] | null;
+  init: () => Asset;
+  collectAllAsset: ({ imageAssets, noiseAssets }: Asset) => Promise<void>;
+  getAllAsset: () => CollectAsset[] | null;
+}
+
 export interface Page {
   numbers: {
     canvasWidth: number | undefined;
@@ -16,9 +36,9 @@ export interface Page {
   scene: THREE.Scene;
   init: ({
     canvas,
-    imageAssets,
+    allAsset,
   }: {
     canvas: HTMLCanvasElement;
-    imageAssets: NodeListOf<Element>;
+    allAsset: CollectAsset[];
   }) => void;
 }

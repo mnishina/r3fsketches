@@ -1,24 +1,6 @@
 import * as THREE from "three";
 
-interface Asset {
-  imageAssets: NodeListOf<Element>;
-  noiseAssets: string[];
-}
-
-interface collectAsset {
-  imageRect: DOMRect | null;
-  imageAsset: string | null;
-  noiseAsset: string | null;
-  imageTexture: THREE.Texture | null;
-  noiseTexture: THREE.Texture | null;
-}
-
-interface Loader {
-  allAsset: collectAsset[] | null;
-  init: () => Asset;
-  collectAllAsset: ({ imageAssets, noiseAssets }: Asset) => Promise<void>;
-  getAllAsset: () => collectAsset[] | null;
-}
+import type { Loader, Asset, CollectAsset } from "./types";
 
 const textureLoader = new THREE.TextureLoader();
 const loader: Loader = {
@@ -48,7 +30,7 @@ async function collectAllAsset({
     const imageRect = image.getBoundingClientRect();
     const src = image.getAttribute("src");
 
-    const asset: collectAsset = {
+    const asset: CollectAsset = {
       imageRect: null,
       imageAsset: null,
       noiseAsset: null,

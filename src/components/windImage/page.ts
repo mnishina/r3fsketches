@@ -1,8 +1,6 @@
 import * as THREE from "three";
 
-import type { Page } from "./types";
-
-import loader from "./loader";
+import type { Page, CollectAsset } from "./types";
 
 import vertexShader from "./shaders/vertexShader.glsl";
 import fragmentShader from "./shaders/fragmentShader.glsl";
@@ -26,10 +24,10 @@ const page: Page = {
 
 async function init({
   canvas,
-  imageAssets,
+  allAsset,
 }: {
   canvas: HTMLCanvasElement;
-  imageAssets: NodeListOf<Element>;
+  allAsset: CollectAsset[];
 }) {
   console.log("page init");
 
@@ -56,7 +54,7 @@ async function init({
   );
   camera.position.set(0, 0, 5);
 
-  _createMesh(imageAssets);
+  _createMesh(allAsset);
 
   _tick({ renderer, camera });
 
@@ -65,19 +63,13 @@ async function init({
   });
 }
 
-async function _createMesh(imageAssets: NodeListOf<Element>) {
+async function _createMesh(allAsset: CollectAsset[]) {
   const tempNum: number = 200;
 
-  const promise = [...imageAssets].map(async (image) => {
-    const imageRect = image.getBoundingClientRect();
+  const promise = [...allAsset].map(async (asset) => {
+    if (!asset.imageRect) return;
 
-    const src = image.getAttribute("src");
-    const matchedAsset = loader.allAsset?.find(
-      (asset) => asset.imageAsset === src,
-    );
-    if (!matchedAsset?.imageTexture || !matchedAsset?.noiseTexture) return;
-
-    const { imageTexture, noiseTexture } = matchedAsset;
+    const { imageRect, imageTexture, noiseTexture } = asset;
 
     const geometry = new THREE.PlaneGeometry(
       imageRect.width / tempNum,
