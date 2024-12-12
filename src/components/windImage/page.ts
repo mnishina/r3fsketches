@@ -79,7 +79,10 @@ async function _createMesh(images: NodeListOf<Element>) {
     const imageRect = image.getBoundingClientRect();
 
     const src = image.getAttribute("src");
-    const imageTexture = loader.allAssets?.get(src);
+    const matchedAsset = loader.allAssets?.find(
+      (asset) => asset.imageAsset === src,
+    );
+    const { imageTexture, noiseTexture } = matchedAsset;
 
     const geometry = new THREE.PlaneGeometry(
       imageRect.width / tempNum,
@@ -94,7 +97,7 @@ async function _createMesh(images: NodeListOf<Element>) {
       fragmentShader,
       uniforms: {
         uImageTexture: { value: imageTexture },
-        uNoiseTexture: { value: imageTexture },
+        uNoiseTexture: { value: noiseTexture },
       },
     });
 
