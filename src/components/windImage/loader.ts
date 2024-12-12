@@ -12,7 +12,7 @@ const loader: Loader = {
 
 function init() {
   const imageAssets = document.querySelectorAll(
-    "[data-imageTexture]",
+    "[data-webglTexture]",
   ) as NodeListOf<Element>;
   const noiseAssets = ["/noise.png", "/perlin.png"];
 
