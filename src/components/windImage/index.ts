@@ -8,8 +8,10 @@ async function init() {
   await loader.collectAllAsset({ imageAssets, noiseAssets });
 
   const allAsset = loader.getAllAsset();
+  if (!allAsset) return;
+
   console.log(allAsset);
 
   const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
-  page.init({ canvas, imageAssets });
+  page.init({ canvas, allAsset });
 }

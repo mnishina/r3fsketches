@@ -1,8 +1,6 @@
 import * as THREE from "three";
 
-import type { Page } from "./types";
-
-import loader from "./loader";
+import type { Page, PageInitParams, CollectAsset } from "./types";
 
 import vertexShader from "./shaders/vertexShader.glsl";
 import fragmentShader from "./shaders/fragmentShader.glsl";
@@ -24,13 +22,7 @@ const page: Page = {
   init,
 };
 
-async function init({
-  canvas,
-  imageAssets,
-}: {
-  canvas: HTMLCanvasElement;
-  imageAssets: NodeListOf<Element>;
-}) {
+function init({ canvas, allAsset }: PageInitParams): void {
   console.log("page init");
 
   const { width, height, aspectRatio } = _getViewportInfo(canvas);
@@ -56,7 +48,7 @@ async function init({
   );
   camera.position.set(0, 0, 5);
 
-  _createMesh(imageAssets);
+  _createMesh(allAsset);
 
   _tick({ renderer, camera });
 
@@ -65,19 +57,13 @@ async function init({
   });
 }
 
-async function _createMesh(imageAssets: NodeListOf<Element>) {
+async function _createMesh(allAsset: CollectAsset[]): Promise<void> {
   const tempNum: number = 200;
 
-  const promise = [...imageAssets].map(async (image) => {
-    const imageRect = image.getBoundingClientRect();
+  const promise = [...allAsset].map(async (asset) => {
+    if (!asset.imageRect) return;
 
-    const src = image.getAttribute("src");
-    const matchedAsset = loader.allAsset?.find(
-      (asset) => asset.imageAsset === src,
-    );
-    if (!matchedAsset?.imageTexture || !matchedAsset?.noiseTexture) return;
-
-    const { imageTexture, noiseTexture } = matchedAsset;
+    const { imageRect, imageTexture, noiseTexture } = asset;
 
     const geometry = new THREE.PlaneGeometry(
       imageRect.width / tempNum,
@@ -109,7 +95,7 @@ function _tick({
 }: {
   renderer: THREE.WebGLRenderer;
   camera: THREE.PerspectiveCamera;
-}) {
+}): void {
   requestAnimationFrame(() => {
     _tick({ renderer, camera });
   });
@@ -125,7 +111,7 @@ function _onResize({
   canvas: HTMLCanvasElement;
   renderer: THREE.WebGLRenderer;
   camera: THREE.PerspectiveCamera;
-}) {
+}): void {
   let timeoutID: number | undefined = undefined;
 
   timeoutID = setTimeout(() => {
@@ -144,7 +130,11 @@ function _onResize({
   }, 500);
 }
 
-function _getViewportInfo(canvas: HTMLCanvasElement) {
+function _getViewportInfo(canvas: HTMLCanvasElement): {
+  width: number;
+  height: number;
+  aspectRatio: number;
+} {
   const canvasRect = canvas.getBoundingClientRect();
   const { width, height } = canvasRect;
   const aspectRatio = width / height;

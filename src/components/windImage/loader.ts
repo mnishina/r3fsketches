@@ -1,24 +1,9 @@
 import * as THREE from "three";
 
-interface Asset {
-  imageAssets: NodeListOf<Element>;
-  noiseAssets: string[];
-}
+import type { Loader, Asset, CollectAsset } from "./types";
 
-interface collectAsset {
-  imageRect: DOMRect | null;
-  imageAsset: string | null;
-  noiseAsset: string | null;
-  imageTexture: THREE.Texture | null;
-  noiseTexture: THREE.Texture | null;
-}
-
-interface Loader {
-  allAsset: collectAsset[] | null;
-  init: () => Asset;
-  collectAllAsset: ({ imageAssets, noiseAssets }: Asset) => Promise<void>;
-  getAllAsset: () => collectAsset[] | null;
-}
+let total: number = 0;
+let progress: number = 0;
 
 const textureLoader = new THREE.TextureLoader();
 const loader: Loader = {
@@ -28,9 +13,9 @@ const loader: Loader = {
   getAllAsset,
 };
 
-function init() {
+function init(): Asset {
   const imageAssets = document.querySelectorAll(
-    "[data-imageTexture]",
+    "[data-webglTexture]",
   ) as NodeListOf<Element>;
   const noiseAssets = ["/noise.png", "/perlin.png"];
 
@@ -42,24 +27,20 @@ async function collectAllAsset({
   noiseAssets,
 }: Asset): Promise<void> {
   //すべてのアセットを収集する
-  const allAsset = [];
-
-  for (const image of imageAssets) {
+  const allAsset: CollectAsset[] = [...imageAssets].map((image) => {
     const imageRect = image.getBoundingClientRect();
     const src = image.getAttribute("src");
 
-    const asset: collectAsset = {
-      imageRect: null,
-      imageAsset: null,
+    return {
+      imageRect: imageRect,
+      imageAsset: src,
       noiseAsset: null,
       imageTexture: null,
       noiseTexture: null,
     };
-    asset.imageRect = imageRect;
-    asset.imageAsset = src;
+  });
 
-    allAsset.push(asset);
-  }
+  total = allAsset.length * 2;
 
   allAsset.forEach((asset) => {
     const randomNum = Math.floor(Math.random() * noiseAssets.length);
@@ -68,33 +49,34 @@ async function collectAllAsset({
   });
 
   //収集したアセットからtextureを読み込み設定する
-  const texturePromise = [];
-  for (const asset of allAsset) {
+  const texturePromise: Promise<void>[] = allAsset.map(async (asset) => {
     if (!asset.imageAsset || !asset.noiseAsset) return;
 
-    const imageTexture = _loadTexture(asset.imageAsset).then((texture) => {
-      asset.imageTexture = texture;
-    });
+    const [imageTexture, noiseTexture] = await Promise.all([
+      _loadTexture(asset.imageAsset),
+      _loadTexture(asset.noiseAsset),
+    ]);
 
-    const noiseTexture = _loadTexture(asset.noiseAsset).then((texture) => {
-      asset.noiseTexture = texture;
-    });
-
-    texturePromise.push(imageTexture, noiseTexture);
-  }
+    asset.imageTexture = imageTexture;
+    asset.noiseTexture = noiseTexture;
+  });
 
   await Promise.all(texturePromise);
 
   loader.allAsset = allAsset;
 }
 
-async function _loadTexture(src: string) {
+async function _loadTexture(src: string): Promise<THREE.Texture> {
   const texture = await textureLoader.loadAsync(src);
+
+  progress++;
+
+  console.log(`${progress} / ${total}`);
 
   return texture;
 }
 
-function getAllAsset() {
+function getAllAsset(): CollectAsset[] | null {
   return loader.allAsset;
 }
 
