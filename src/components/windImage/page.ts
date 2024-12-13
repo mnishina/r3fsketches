@@ -65,6 +65,9 @@ async function _createMesh(allAsset: CollectAsset[]): Promise<void> {
 
     const { imageRect, imageTexture, noiseTexture } = asset;
 
+    if (imageTexture) imageTexture.needsUpdate = true;
+    if (noiseTexture) noiseTexture.needsUpdate = true;
+
     const geometry = new THREE.PlaneGeometry(
       imageRect.width / tempNum,
       imageRect.height / tempNum,
