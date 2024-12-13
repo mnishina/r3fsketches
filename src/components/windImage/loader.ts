@@ -73,6 +73,8 @@ async function _loadTexture(src: string): Promise<THREE.Texture> {
 
   console.log(`${progress} / ${total}`);
 
+  texture.needsUpdate = false;
+
   return texture;
 }
 
