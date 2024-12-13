@@ -13,7 +13,7 @@ const loader: Loader = {
   getAllAsset,
 };
 
-function init() {
+function init(): Asset {
   const imageAssets = document.querySelectorAll(
     "[data-webglTexture]",
   ) as NodeListOf<Element>;
@@ -66,7 +66,7 @@ async function collectAllAsset({
   loader.allAsset = allAsset;
 }
 
-async function _loadTexture(src: string) {
+async function _loadTexture(src: string): Promise<THREE.Texture> {
   const texture = await textureLoader.loadAsync(src);
 
   progress++;
@@ -76,7 +76,7 @@ async function _loadTexture(src: string) {
   return texture;
 }
 
-function getAllAsset() {
+function getAllAsset(): CollectAsset[] | null {
   return loader.allAsset;
 }
 

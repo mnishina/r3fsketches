@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-import type { Page, CollectAsset } from "./types";
+import type { Page, PageInitParams, CollectAsset } from "./types";
 
 import vertexShader from "./shaders/vertexShader.glsl";
 import fragmentShader from "./shaders/fragmentShader.glsl";
@@ -22,13 +22,7 @@ const page: Page = {
   init,
 };
 
-async function init({
-  canvas,
-  allAsset,
-}: {
-  canvas: HTMLCanvasElement;
-  allAsset: CollectAsset[];
-}) {
+function init({ canvas, allAsset }: PageInitParams): void {
   console.log("page init");
 
   const { width, height, aspectRatio } = _getViewportInfo(canvas);
@@ -63,7 +57,7 @@ async function init({
   });
 }
 
-async function _createMesh(allAsset: CollectAsset[]) {
+async function _createMesh(allAsset: CollectAsset[]): Promise<void> {
   const tempNum: number = 200;
 
   const promise = [...allAsset].map(async (asset) => {
@@ -101,7 +95,7 @@ function _tick({
 }: {
   renderer: THREE.WebGLRenderer;
   camera: THREE.PerspectiveCamera;
-}) {
+}): void {
   requestAnimationFrame(() => {
     _tick({ renderer, camera });
   });
@@ -117,7 +111,7 @@ function _onResize({
   canvas: HTMLCanvasElement;
   renderer: THREE.WebGLRenderer;
   camera: THREE.PerspectiveCamera;
-}) {
+}): void {
   let timeoutID: number | undefined = undefined;
 
   timeoutID = setTimeout(() => {
@@ -136,7 +130,11 @@ function _onResize({
   }, 500);
 }
 
-function _getViewportInfo(canvas: HTMLCanvasElement) {
+function _getViewportInfo(canvas: HTMLCanvasElement): {
+  width: number;
+  height: number;
+  aspectRatio: number;
+} {
   const canvasRect = canvas.getBoundingClientRect();
   const { width, height } = canvasRect;
   const aspectRatio = width / height;

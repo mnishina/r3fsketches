@@ -16,8 +16,13 @@ export interface CollectAsset {
 export interface Loader {
   allAsset: CollectAsset[] | null;
   init: () => Asset;
-  collectAllAsset: ({ imageAssets, noiseAssets }: Asset) => Promise<void>;
+  collectAllAsset: (asset: Asset) => Promise<void>;
   getAllAsset: () => CollectAsset[] | null;
+}
+
+export interface PageInitParams {
+  canvas: HTMLCanvasElement;
+  allAsset: CollectAsset[];
 }
 
 export interface Page {
@@ -34,11 +39,5 @@ export interface Page {
     };
   };
   scene: THREE.Scene;
-  init: ({
-    canvas,
-    allAsset,
-  }: {
-    canvas: HTMLCanvasElement;
-    allAsset: CollectAsset[];
-  }) => void;
+  init: (params: PageInitParams) => void;
 }
