@@ -22,7 +22,7 @@ const page: Page = {
   init,
 };
 
-function init({ canvas, allAsset }: PageInitParams): void {
+async function init({ canvas, allAsset }: PageInitParams): Promise<void> {
   console.log("page init");
 
   const { width, height, aspectRatio } = _getViewportInfo(canvas);
@@ -48,7 +48,7 @@ function init({ canvas, allAsset }: PageInitParams): void {
   );
   camera.position.set(0, 0, 5);
 
-  _createMesh(allAsset);
+  await _createMesh(allAsset);
 
   _tick({ renderer, camera });
 
