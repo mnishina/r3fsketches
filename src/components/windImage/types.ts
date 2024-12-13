@@ -39,5 +39,5 @@ export interface Page {
     };
   };
   scene: THREE.Scene;
-  init: (params: PageInitParams) => void;
+  init: (params: PageInitParams) => Promise<void>;
 }

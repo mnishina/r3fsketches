@@ -13,5 +13,5 @@ async function init() {
   console.log(allAsset);
 
   const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
-  page.init({ canvas, allAsset });
+  await page.init({ canvas, allAsset });
 }
