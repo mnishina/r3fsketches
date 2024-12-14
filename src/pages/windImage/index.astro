@@ -11,9 +11,9 @@ const title = getPageTitle(pagesData, Astro.url.pathname);
 
 <Layout title={title}>
   <ul>
-    <li><img src="/image.png" alt="" data-webglTexture /></li>
-    <li><img src="/bnw001.png" alt="" data-webglTexture /></li>
-    <li><img src="/bnw004.png" alt="" data-webglTexture /></li>
+    <li><img src="/image.png" alt="" data-webglTexture decoding="async" /></li>
+    <li><img src="/bnw001.png" alt="" data-webglTexture decoding="async" /></li>
+    <li><img src="/bnw004.png" alt="" data-webglTexture decoding="async" /></li>
   </ul>
   <canvas id="canvas"></canvas>
 </Layout>
