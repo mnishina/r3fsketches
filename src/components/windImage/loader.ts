@@ -32,6 +32,7 @@ async function collectAllAsset({
     const src = image.getAttribute("src");
 
     return {
+      imageElement: image,
       imageRect: imageRect,
       imageAsset: src,
       noiseAsset: null,
