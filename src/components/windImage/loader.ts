@@ -29,7 +29,7 @@ async function collectAllAsset({
   //すべてのアセットを収集する
   const allAsset: CollectAsset[] = [...imageAssets].map((image) => {
     const imageRect = image.getBoundingClientRect();
-    const src = image.getAttribute("src");
+    const src = `${image.getAttribute("src")}?v=${new Date().getTime()}`;
 
     return {
       imageElement: image,
