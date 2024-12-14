@@ -57,7 +57,7 @@ async function init({ canvas, allAsset }: PageInitParams): Promise<void> {
   );
   page.camera.position.set(0, 0, page.numbers.camera.far);
 
-  await _createMesh(allAsset);
+  await _createMesh(canvas, allAsset);
 
   window.addEventListener("resize", () => {
     if (!page.renderer || !page.camera) return;
@@ -66,7 +66,10 @@ async function init({ canvas, allAsset }: PageInitParams): Promise<void> {
   });
 }
 
-async function _createMesh(allAsset: CollectAsset[]): Promise<void> {
+async function _createMesh(
+  canvas: HTMLCanvasElement,
+  allAsset: CollectAsset[],
+): Promise<void> {
   const promise = [...allAsset].map(async (asset) => {
     if (!asset.imageRect) return;
 
@@ -103,6 +106,9 @@ async function _createMesh(allAsset: CollectAsset[]): Promise<void> {
     console.log(material.uniforms.uImageTexture.value);
 
     const mesh = new THREE.Mesh(geometry, material);
+
+    const { x, y } = _getDomPosition(canvas, asset.imageRect);
+    mesh.position.set(x, y, 0);
 
     mesh.userData.asset = asset;
     page.scene.add(mesh);
@@ -160,6 +166,14 @@ function _getViewportInfo(canvas: HTMLCanvasElement): {
   const fov = radian * (180 / Math.PI);
 
   return { width, height, aspectRatio, fov };
+}
+
+function _getDomPosition(canvas: HTMLCanvasElement, rect: DOMRect) {
+  const canvasRect = canvas.getBoundingClientRect();
+  const x = rect.left + rect.width / 2 - canvasRect.width / 2;
+  const y = -rect.top - rect.height / 2 + canvasRect.height / 2;
+
+  return { x, y };
 }
 
 export default page;
