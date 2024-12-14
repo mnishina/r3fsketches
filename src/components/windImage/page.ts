@@ -35,6 +35,7 @@ async function init({ canvas, allAsset }: PageInitParams): Promise<void> {
     canvas: canvas,
     antialias: true,
     alpha: true,
+    preserveDrawingBuffer: true,
   });
   renderer.setSize(page.numbers.canvasWidth, page.numbers.canvasHeight, false);
   renderer.setPixelRatio(page.numbers.devicePixelRatio);
