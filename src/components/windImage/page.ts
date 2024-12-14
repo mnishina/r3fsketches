@@ -14,7 +14,7 @@ const page: Page = {
     devicePixelRatio: Math.min(window.devicePixelRatio, 2),
     geometrySegments: 32,
     camera: {
-      fov: 75,
+      fov: undefined,
       aspectRatio: undefined,
       near: 0.1,
       far: 1000,
@@ -28,10 +28,11 @@ const page: Page = {
 async function init({ canvas, allAsset }: PageInitParams): Promise<void> {
   console.log("page init");
 
-  const { width, height, aspectRatio } = _getViewportInfo(canvas);
+  const { width, height, aspectRatio, fov } = _getViewportInfo(canvas);
 
   page.numbers.canvasWidth = width;
   page.numbers.canvasHeight = height;
+  page.numbers.camera.fov = fov;
   page.numbers.camera.aspectRatio = aspectRatio;
 
   page.renderer = new THREE.WebGLRenderer({
@@ -54,9 +55,9 @@ async function init({ canvas, allAsset }: PageInitParams): Promise<void> {
     page.numbers.camera.near,
     page.numbers.camera.far,
   );
-  page.camera.position.set(0, 0, 5);
+  page.camera.position.set(0, 0, page.numbers.camera.far);
 
-  await _createMesh(allAsset);
+  await _createMesh(canvas, allAsset);
 
   window.addEventListener("resize", () => {
     if (!page.renderer || !page.camera) return;
@@ -65,17 +66,18 @@ async function init({ canvas, allAsset }: PageInitParams): Promise<void> {
   });
 }
 
-async function _createMesh(allAsset: CollectAsset[]): Promise<void> {
-  const tempNum: number = 200;
-
+async function _createMesh(
+  canvas: HTMLCanvasElement,
+  allAsset: CollectAsset[],
+): Promise<void> {
   const promise = [...allAsset].map(async (asset) => {
     if (!asset.imageRect) return;
 
     const { imageRect, imageTexture, noiseTexture } = asset;
 
     const geometry = new THREE.PlaneGeometry(
-      imageRect.width / tempNum,
-      imageRect.height / tempNum,
+      imageRect.width,
+      imageRect.height,
       page.numbers.geometrySegments,
       page.numbers.geometrySegments,
     );
@@ -105,6 +107,9 @@ async function _createMesh(allAsset: CollectAsset[]): Promise<void> {
 
     const mesh = new THREE.Mesh(geometry, material);
 
+    const { x, y } = _getDomPosition(canvas, asset.imageRect);
+    mesh.position.set(x, y, 0);
+
     mesh.userData.asset = asset;
     page.scene.add(mesh);
   });
@@ -133,10 +138,11 @@ function _onResize(
   timeoutID = setTimeout(() => {
     if (timeoutID) clearTimeout(timeoutID);
 
-    const { width, height, aspectRatio } = _getViewportInfo(canvas);
+    const { width, height, aspectRatio, fov } = _getViewportInfo(canvas);
 
     renderer.setSize(width, height, false);
 
+    camera.fov = fov;
     camera.aspect = aspectRatio;
     camera.updateProjectionMatrix();
 
@@ -150,12 +156,24 @@ function _getViewportInfo(canvas: HTMLCanvasElement): {
   width: number;
   height: number;
   aspectRatio: number;
+  fov: number;
 } {
   const canvasRect = canvas.getBoundingClientRect();
   const { width, height } = canvasRect;
   const aspectRatio = width / height;
 
-  return { width, height, aspectRatio };
+  const radian = 2 * Math.atan(height / 2 / page.numbers.camera.far);
+  const fov = radian * (180 / Math.PI);
+
+  return { width, height, aspectRatio, fov };
+}
+
+function _getDomPosition(canvas: HTMLCanvasElement, rect: DOMRect) {
+  const canvasRect = canvas.getBoundingClientRect();
+  const x = rect.left + rect.width / 2 - canvasRect.width / 2;
+  const y = -rect.top - rect.height / 2 + canvasRect.height / 2;
+
+  return { x, y };
 }
 
 export default page;
