@@ -85,6 +85,7 @@ async function _createMesh(allAsset: CollectAsset[]): Promise<void> {
         uNoiseTexture: { value: noiseTexture },
       },
     });
+    material.needsUpdate = true;
 
     const mesh = new THREE.Mesh(geometry, material);
     page.scene.add(mesh);
