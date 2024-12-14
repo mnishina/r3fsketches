@@ -13,7 +13,7 @@ const page: Page = {
     canvasWidth: undefined,
     canvasHeight: undefined,
     devicePixelRatio: Math.min(window.devicePixelRatio, 2),
-    geometrySegments: 32,
+    geometrySegments: 3,
     camera: {
       fov: undefined,
       aspectRatio: undefined,
@@ -76,10 +76,13 @@ async function _createMesh(
   allAsset: CollectAsset[],
 ): Promise<void> {
   const promise = [...allAsset].map(async (asset) => {
-    if (!asset.imageRect) return;
+    if (!asset.imageRect || !asset.imageTexture || !asset.noiseTexture) return;
 
     const { imageRect, imageTexture, noiseTexture } = asset;
     console.log(asset);
+
+    asset.imageTexture.needsUpdate = true;
+    asset.noiseTexture.needsUpdate = true;
 
     const geometry = new THREE.PlaneGeometry(
       imageRect.width,
@@ -97,7 +100,6 @@ async function _createMesh(
         uNoiseTexture: { value: noiseTexture },
       },
     });
-    // material.needsUpdate = true;
 
     // material.uniforms.uImageTexture.value = imageTexture;
     // material.uniforms.uNoiseTexture.value = noiseTexture;
@@ -187,11 +189,12 @@ function _resizeElements(o: o, canvas: HTMLCanvasElement) {
   const { x, y } = _getDomPosition(canvas, newImageRect);
   mesh.position.set(x, y, 0);
 
-  geometry.scale(
-    newImageRect.width / imageRect.width,
-    newImageRect.height / imageRect.height,
-    1,
-  );
+  const scaleX = newImageRect.width / imageRect.width;
+  const scaleY = newImageRect.height / imageRect.height;
+
+  if (isFinite(scaleX) && isFinite(scaleY) && scaleX !== 0 && scaleY !== 0) {
+    geometry.scale(scaleX, scaleY, 1);
+  }
 
   o.imageRect = newImageRect;
 }
