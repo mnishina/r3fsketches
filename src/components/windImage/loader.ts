@@ -52,13 +52,14 @@ async function collectAllAsset({
   const texturePromise: Promise<void>[] = allAsset.map(async (asset) => {
     if (!asset.imageAsset || !asset.noiseAsset) return;
 
-    const [imageTexture, noiseTexture] = await Promise.all([
-      _loadTexture(asset.imageAsset),
-      _loadTexture(asset.noiseAsset),
+    await Promise.all([
+      _loadTexture(asset.imageAsset).then((imageTexture) => {
+        asset.imageTexture = imageTexture;
+      }),
+      _loadTexture(asset.noiseAsset).then((noiseTexture) => {
+        asset.noiseTexture = noiseTexture;
+      }),
     ]);
-
-    asset.imageTexture = imageTexture;
-    asset.noiseTexture = noiseTexture;
   });
 
   await Promise.all(texturePromise);
@@ -73,6 +74,8 @@ async function _loadTexture(src: string): Promise<THREE.Texture> {
 
   console.log(`${progress} / ${total}`);
 
+  texture.magFilter = THREE.LinearFilter;
+  texture.minFilter = THREE.LinearFilter;
   texture.needsUpdate = false;
 
   return texture;
