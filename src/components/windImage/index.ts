@@ -18,4 +18,6 @@ async function init() {
   if (page.renderer && page.camera) {
     page.render(page.renderer, page.camera);
   }
+
+  console.log("end index init");
 }

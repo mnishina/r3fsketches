@@ -90,11 +90,18 @@ async function _createMesh(allAsset: CollectAsset[]): Promise<void> {
       },
     });
     material.needsUpdate = true;
-    if (imageTexture) imageTexture.needsUpdate = true;
-    if (noiseTexture) noiseTexture.needsUpdate = true;
 
     material.uniforms.uImageTexture.value = imageTexture;
     material.uniforms.uNoiseTexture.value = noiseTexture;
+
+    console.log(material);
+    console.log(material.uniforms.uImageTexture.value);
+
+    if (imageTexture) imageTexture.needsUpdate = true;
+    if (noiseTexture) noiseTexture.needsUpdate = true;
+
+    console.log(material);
+    console.log(material.uniforms.uImageTexture.value);
 
     const mesh = new THREE.Mesh(geometry, material);
 
