@@ -6,6 +6,7 @@ export interface Asset {
 }
 
 export interface CollectAsset {
+  imageElement: Element;
   imageRect: DOMRect | null;
   imageAsset: string | null;
   noiseAsset: string | null;
@@ -25,12 +26,23 @@ export interface PageInitParams {
   allAsset: CollectAsset[];
 }
 
+export interface o {
+  imageRect: DOMRect;
+  geometry: THREE.PlaneGeometry;
+  material: THREE.ShaderMaterial;
+  mesh: THREE.Mesh;
+  $: {
+    imageElement: Element;
+  };
+}
+
 export interface Page {
   init: (params: PageInitParams) => Promise<void>;
   render: (
     renderer: THREE.WebGLRenderer,
     camera: THREE.PerspectiveCamera,
   ) => void;
+  canvas: HTMLCanvasElement | undefined;
   numbers: {
     canvasWidth: number | undefined;
     canvasHeight: number | undefined;
@@ -44,6 +56,8 @@ export interface Page {
     };
   };
   scene: THREE.Scene;
+  clock: THREE.Clock;
   camera: THREE.PerspectiveCamera | null;
   renderer: THREE.WebGLRenderer | null;
+  os: o[];
 }

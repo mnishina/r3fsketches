@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-import type { Page, PageInitParams, CollectAsset } from "./types";
+import type { Page, PageInitParams, CollectAsset, o } from "./types";
 
 import vertexShader from "./shaders/vertexShader.glsl";
 import fragmentShader from "./shaders/fragmentShader.glsl";
@@ -8,6 +8,7 @@ import fragmentShader from "./shaders/fragmentShader.glsl";
 const page: Page = {
   init,
   render,
+  canvas: undefined,
   numbers: {
     canvasWidth: undefined,
     canvasHeight: undefined,
@@ -21,12 +22,16 @@ const page: Page = {
     },
   },
   scene: new THREE.Scene(),
+  clock: new THREE.Clock(),
   camera: null,
   renderer: null,
+  os: [],
 };
 
 async function init({ canvas, allAsset }: PageInitParams): Promise<void> {
   console.log("page init");
+
+  page.canvas = canvas;
 
   const { width, height, aspectRatio, fov } = _getViewportInfo(canvas);
 
@@ -74,6 +79,7 @@ async function _createMesh(
     if (!asset.imageRect) return;
 
     const { imageRect, imageTexture, noiseTexture } = asset;
+    console.log(asset);
 
     const geometry = new THREE.PlaneGeometry(
       imageRect.width,
@@ -91,27 +97,40 @@ async function _createMesh(
         uNoiseTexture: { value: noiseTexture },
       },
     });
-    material.needsUpdate = true;
+    // material.needsUpdate = true;
 
-    material.uniforms.uImageTexture.value = imageTexture;
-    material.uniforms.uNoiseTexture.value = noiseTexture;
+    // material.uniforms.uImageTexture.value = imageTexture;
+    // material.uniforms.uNoiseTexture.value = noiseTexture;
 
-    console.log(material);
-    console.log(material.uniforms.uImageTexture.value);
+    // console.log(material);
+    // console.log(material.uniforms.uImageTexture.value);
 
-    if (imageTexture) imageTexture.needsUpdate = true;
-    if (noiseTexture) noiseTexture.needsUpdate = true;
+    // if (imageTexture) imageTexture.needsUpdate = true;
+    // if (noiseTexture) noiseTexture.needsUpdate = true;
 
-    console.log(material);
-    console.log(material.uniforms.uImageTexture.value);
+    // console.log(material);
+    // console.log(material.uniforms.uImageTexture.value);
 
     const mesh = new THREE.Mesh(geometry, material);
 
-    const { x, y } = _getDomPosition(canvas, asset.imageRect);
+    const { x, y } = _getDomPosition(canvas, imageRect);
     mesh.position.set(x, y, 0);
+
+    const o: o = {
+      imageRect,
+      geometry,
+      material,
+      mesh,
+      $: {
+        imageElement: asset.imageElement,
+      },
+    };
+    page.os.push(o);
 
     mesh.userData.asset = asset;
     page.scene.add(mesh);
+
+    return o;
   });
 
   await Promise.all(promise);
@@ -124,6 +143,8 @@ function render(
   requestAnimationFrame(() => {
     render(renderer, camera);
   });
+
+  page.os.forEach((o) => _scrollElements(o));
 
   renderer.render(page.scene, camera);
 }
@@ -149,10 +170,46 @@ function _onResize(
     page.numbers.canvasWidth = width;
     page.numbers.canvasHeight = height;
     page.numbers.camera.aspectRatio = aspectRatio;
+
+    page.os.forEach((o) => _resizeElements(o, canvas));
   }, 500);
 }
 
+function _resizeElements(o: o, canvas: HTMLCanvasElement) {
+  const {
+    imageRect,
+    geometry,
+    mesh,
+    $: { imageElement },
+  } = o;
+
+  const newImageRect = imageElement.getBoundingClientRect();
+  const { x, y } = _getDomPosition(canvas, newImageRect);
+  mesh.position.set(x, y, 0);
+
+  geometry.scale(
+    newImageRect.width / imageRect.width,
+    newImageRect.height / imageRect.height,
+    1,
+  );
+
+  o.imageRect = newImageRect;
+}
+
+function _scrollElements(o: o) {
+  const {
+    mesh,
+    $: { imageElement },
+  } = o;
+
+  const newImageRect = imageElement.getBoundingClientRect();
+  const { y } = _getDomPosition(page.canvas!, newImageRect);
+
+  mesh.position.y = y;
+}
+
 function _getViewportInfo(canvas: HTMLCanvasElement): {
+  canvasRect: DOMRect;
   width: number;
   height: number;
   aspectRatio: number;
@@ -165,7 +222,7 @@ function _getViewportInfo(canvas: HTMLCanvasElement): {
   const radian = 2 * Math.atan(height / 2 / page.numbers.camera.far);
   const fov = radian * (180 / Math.PI);
 
-  return { width, height, aspectRatio, fov };
+  return { canvasRect, width, height, aspectRatio, fov };
 }
 
 function _getDomPosition(canvas: HTMLCanvasElement, rect: DOMRect) {
