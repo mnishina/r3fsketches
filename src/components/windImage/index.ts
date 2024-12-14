@@ -14,4 +14,8 @@ async function init() {
 
   const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
   await page.init({ canvas, allAsset });
+
+  if (page.renderer && page.camera) {
+    page.render(page.renderer, page.camera);
+  }
 }
