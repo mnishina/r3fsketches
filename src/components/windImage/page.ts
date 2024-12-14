@@ -6,6 +6,8 @@ import vertexShader from "./shaders/vertexShader.glsl";
 import fragmentShader from "./shaders/fragmentShader.glsl";
 
 const page: Page = {
+  init,
+  render,
   numbers: {
     canvasWidth: undefined,
     canvasHeight: undefined,
@@ -21,8 +23,6 @@ const page: Page = {
   scene: new THREE.Scene(),
   camera: null,
   renderer: null,
-  init,
-  render,
 };
 
 async function init({ canvas, allAsset }: PageInitParams): Promise<void> {
@@ -73,9 +73,6 @@ async function _createMesh(allAsset: CollectAsset[]): Promise<void> {
 
     const { imageRect, imageTexture, noiseTexture } = asset;
 
-    if (imageTexture) imageTexture.needsUpdate = true;
-    if (noiseTexture) noiseTexture.needsUpdate = true;
-
     const geometry = new THREE.PlaneGeometry(
       imageRect.width / tempNum,
       imageRect.height / tempNum,
@@ -93,8 +90,15 @@ async function _createMesh(allAsset: CollectAsset[]): Promise<void> {
       },
     });
     material.needsUpdate = true;
+    if (imageTexture) imageTexture.needsUpdate = true;
+    if (noiseTexture) noiseTexture.needsUpdate = true;
+
+    material.uniforms.uImageTexture.value = imageTexture;
+    material.uniforms.uNoiseTexture.value = noiseTexture;
 
     const mesh = new THREE.Mesh(geometry, material);
+
+    mesh.userData.asset = asset;
     page.scene.add(mesh);
   });
 
