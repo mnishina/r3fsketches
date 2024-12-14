@@ -19,7 +19,10 @@ const page: Page = {
     },
   },
   scene: new THREE.Scene(),
+  camera: null,
+  renderer: null,
   init,
+  render,
 };
 
 async function init({ canvas, allAsset }: PageInitParams): Promise<void> {
@@ -31,30 +34,34 @@ async function init({ canvas, allAsset }: PageInitParams): Promise<void> {
   page.numbers.canvasHeight = height;
   page.numbers.camera.aspectRatio = aspectRatio;
 
-  const renderer = new THREE.WebGLRenderer({
+  page.renderer = new THREE.WebGLRenderer({
     canvas: canvas,
     antialias: true,
     alpha: true,
     preserveDrawingBuffer: true,
   });
-  renderer.setSize(page.numbers.canvasWidth, page.numbers.canvasHeight, false);
-  renderer.setPixelRatio(page.numbers.devicePixelRatio);
+  page.renderer.setSize(
+    page.numbers.canvasWidth,
+    page.numbers.canvasHeight,
+    false,
+  );
+  page.renderer.setPixelRatio(page.numbers.devicePixelRatio);
 
   // camera
-  const camera = new THREE.PerspectiveCamera(
+  page.camera = new THREE.PerspectiveCamera(
     page.numbers.camera.fov,
     page.numbers.camera.aspectRatio,
     page.numbers.camera.near,
     page.numbers.camera.far,
   );
-  camera.position.set(0, 0, 5);
+  page.camera.position.set(0, 0, 5);
 
   await _createMesh(allAsset);
 
-  _tick({ renderer, camera });
-
   window.addEventListener("resize", () => {
-    _onResize({ canvas, renderer, camera });
+    if (!page.renderer || !page.camera) return;
+
+    _onResize(canvas, page.renderer, page.camera);
   });
 }
 
@@ -94,29 +101,22 @@ async function _createMesh(allAsset: CollectAsset[]): Promise<void> {
   await Promise.all(promise);
 }
 
-function _tick({
-  renderer,
-  camera,
-}: {
-  renderer: THREE.WebGLRenderer;
-  camera: THREE.PerspectiveCamera;
-}): void {
+function render(
+  renderer: THREE.WebGLRenderer,
+  camera: THREE.PerspectiveCamera,
+): void {
   requestAnimationFrame(() => {
-    _tick({ renderer, camera });
+    render(renderer, camera);
   });
 
   renderer.render(page.scene, camera);
 }
 
-function _onResize({
-  canvas,
-  renderer,
-  camera,
-}: {
-  canvas: HTMLCanvasElement;
-  renderer: THREE.WebGLRenderer;
-  camera: THREE.PerspectiveCamera;
-}): void {
+function _onResize(
+  canvas: HTMLCanvasElement,
+  renderer: THREE.WebGLRenderer,
+  camera: THREE.PerspectiveCamera,
+): void {
   let timeoutID: number | undefined = undefined;
 
   timeoutID = setTimeout(() => {

@@ -39,5 +39,11 @@ export interface Page {
     };
   };
   scene: THREE.Scene;
+  camera: THREE.PerspectiveCamera | null;
+  renderer: THREE.WebGLRenderer | null;
   init: (params: PageInitParams) => Promise<void>;
+  render: (
+    renderer: THREE.WebGLRenderer,
+    camera: THREE.PerspectiveCamera,
+  ) => void;
 }
