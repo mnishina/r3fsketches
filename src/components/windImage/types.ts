@@ -37,7 +37,7 @@ export interface Page {
     devicePixelRatio: number;
     geometrySegments: number;
     camera: {
-      fov: number;
+      fov: number | undefined;
       aspectRatio: number | undefined;
       near: number;
       far: number;
