@@ -75,7 +75,7 @@ async function _createMesh(
   canvas: HTMLCanvasElement,
   allAsset: CollectAsset[],
 ): Promise<void> {
-  const promise = [...allAsset].map(async (asset) => {
+  const promise = [...allAsset].map((asset) => {
     if (!asset.imageRect || !asset.imageTexture || !asset.noiseTexture) return;
 
     const { imageRect, imageTexture, noiseTexture } = asset;
@@ -100,18 +100,6 @@ async function _createMesh(
         uNoiseTexture: { value: noiseTexture },
       },
     });
-
-    // material.uniforms.uImageTexture.value = imageTexture;
-    // material.uniforms.uNoiseTexture.value = noiseTexture;
-
-    // console.log(material);
-    // console.log(material.uniforms.uImageTexture.value);
-
-    // if (imageTexture) imageTexture.needsUpdate = true;
-    // if (noiseTexture) noiseTexture.needsUpdate = true;
-
-    // console.log(material);
-    // console.log(material.uniforms.uImageTexture.value);
 
     const mesh = new THREE.Mesh(geometry, material);
 
