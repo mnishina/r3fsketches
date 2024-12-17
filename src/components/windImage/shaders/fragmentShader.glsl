@@ -8,9 +8,13 @@ void main() {
   // gl_FragColor = vec4(color, 1.0);
 
   vec4 imageTexture = texture2D(uImageTexture, vUv);
-  vec4 noiseTexture = texture2D(uNoiseTexture, vUv);
+  // vec4 noiseTexture = texture2D(uNoiseTexture, vUv);
 
-  vec4 tex = mix(imageTexture, noiseTexture, 0.5);
+  // vec4 tex = mix(imageTexture, noiseTexture, 0.5);
 
-  gl_FragColor = tex;
+  gl_FragColor = imageTexture;
+
+
+  #include <tonemapping_fragment>
+  // #include <colorspace_fragment>
 }
