@@ -7,6 +7,7 @@ import fragmentShader from "./shaders/fragmentShader.glsl";
 
 const page: Page = {
   init,
+  createMesh,
   render,
   canvas: undefined,
   numbers: {
@@ -28,7 +29,7 @@ const page: Page = {
   os: [],
 };
 
-async function init({ canvas, allAsset }: PageInitParams): Promise<void> {
+function init({ canvas, allAsset }: PageInitParams): void {
   console.log("page init");
 
   page.canvas = canvas;
@@ -62,8 +63,6 @@ async function init({ canvas, allAsset }: PageInitParams): Promise<void> {
   );
   page.camera.position.set(0, 0, page.numbers.camera.far);
 
-  await _createMesh(canvas, allAsset);
-
   window.addEventListener("resize", () => {
     if (!page.renderer || !page.camera) return;
 
@@ -71,7 +70,7 @@ async function init({ canvas, allAsset }: PageInitParams): Promise<void> {
   });
 }
 
-async function _createMesh(
+async function createMesh(
   canvas: HTMLCanvasElement,
   allAsset: CollectAsset[],
 ): Promise<void> {

@@ -3,23 +3,23 @@ import loader from "./loader";
 
 init();
 
-function init() {
-  window.addEventListener("load", async () => {
-    const { imageAssets, noiseAssets } = loader.init();
-    await loader.collectAllAsset({ imageAssets, noiseAssets });
+async function init() {
+  const { imageAssets, noiseAssets } = loader.init();
+  await loader.collectAllAsset({ imageAssets, noiseAssets });
 
-    const allAsset = loader.getAllAsset();
-    if (!allAsset) return;
+  const allAsset = loader.getAllAsset();
+  if (!allAsset) return;
 
-    console.log(allAsset);
+  // console.log(allAsset);
 
-    const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
-    await page.init({ canvas, allAsset });
+  const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
+  page.init({ canvas, allAsset });
 
-    if (page.renderer && page.camera) {
-      page.render(page.renderer, page.camera);
-    }
+  await page.createMesh(canvas, allAsset);
 
-    console.log("end index init");
-  });
+  if (page.renderer && page.camera) {
+    page.render(page.renderer, page.camera);
+  }
+
+  console.log("end index init");
 }

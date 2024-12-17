@@ -37,7 +37,11 @@ export interface o {
 }
 
 export interface Page {
-  init: (params: PageInitParams) => Promise<void>;
+  init: (params: PageInitParams) => void;
+  createMesh: (
+    canvas: HTMLCanvasElement,
+    allAsset: CollectAsset[],
+  ) => Promise<void>;
   render: (
     renderer: THREE.WebGLRenderer,
     camera: THREE.PerspectiveCamera,
