@@ -91,13 +91,14 @@ async function createMesh(
       page.numbers.geometrySegments,
       page.numbers.geometrySegments,
     );
-    geometry.translate(0, 0, 0); //下辺を軸にする
+    // geometry.translate(0, 0, 0); //下辺を軸にする
 
     const material = new THREE.ShaderMaterial({
       // wireframe: true,
-      side: THREE.DoubleSide,
-      transparent: true,
+      // side: THREE.DoubleSide,
+      // transparent: true,
       depthWrite: false,
+      depthTest: true,
       vertexShader,
       fragmentShader,
       uniforms: {
@@ -105,6 +106,7 @@ async function createMesh(
         uNoiseTexture: { value: noiseTexture },
         uTime: { value: 0 },
         uMeshWidth: { value: imageRect.width },
+        uMeshHeight: { value: imageRect.height },
       },
     });
 
