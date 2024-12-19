@@ -14,7 +14,7 @@ const page: Page = {
     canvasWidth: undefined,
     canvasHeight: undefined,
     devicePixelRatio: Math.min(window.devicePixelRatio, 2),
-    geometrySegments: 3,
+    geometrySegments: 32,
     camera: {
       fov: undefined,
       aspectRatio: undefined,
@@ -80,8 +80,10 @@ async function createMesh(
     const { imageRect, imageTexture, noiseTexture } = asset;
     console.log(asset);
 
-    asset.imageTexture.needsUpdate = true;
-    asset.noiseTexture.needsUpdate = true;
+    // asset.imageTexture.needsUpdate = true;
+    // asset.noiseTexture.needsUpdate = true;
+    asset.noiseTexture.wrapS = THREE.RepeatWrapping;
+    asset.noiseTexture.wrapT = THREE.RepeatWrapping;
 
     const geometry = new THREE.PlaneGeometry(
       imageRect.width,
@@ -89,21 +91,29 @@ async function createMesh(
       page.numbers.geometrySegments,
       page.numbers.geometrySegments,
     );
+    // geometry.translate(0, 0, 0); //下辺を軸にする
 
     const material = new THREE.ShaderMaterial({
       // wireframe: true,
+      // side: THREE.DoubleSide,
+      // transparent: true,
+      depthWrite: false,
+      depthTest: true,
       vertexShader,
       fragmentShader,
       uniforms: {
         uImageTexture: { value: imageTexture },
         uNoiseTexture: { value: noiseTexture },
+        uTime: { value: 0 },
+        uMeshWidth: { value: imageRect.width },
+        uMeshHeight: { value: imageRect.height },
       },
     });
 
     const mesh = new THREE.Mesh(geometry, material);
 
-    const { x, y } = _getDomPosition(canvas, imageRect);
-    mesh.position.set(x, y, 0);
+    // const { x, y } = _getDomPosition(canvas, imageRect);
+    // mesh.position.set(x, y, 0);
 
     const o: o = {
       imageRect,
@@ -118,6 +128,7 @@ async function createMesh(
 
     mesh.userData.asset = asset;
     page.scene.add(mesh);
+    mesh.position.z = 50;
 
     return o;
   });
@@ -131,6 +142,12 @@ function render(
 ): void {
   requestAnimationFrame(() => {
     render(renderer, camera);
+  });
+
+  const elapsedTime = page.clock.getElapsedTime();
+
+  page.os.forEach((o) => {
+    o.material.uniforms.uTime.value = elapsedTime;
   });
 
   page.os.forEach((o) => _scrollElements(o));
