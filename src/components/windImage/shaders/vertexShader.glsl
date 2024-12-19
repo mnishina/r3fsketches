@@ -11,33 +11,37 @@ uniform sampler2D uNoiseTexture;
 void main() {
 
   vec3 newPosition = position;
-  
-  // float wave = sin(uv.y * 8.0 + uTime * 1.2) * 20.0;
-  // wave *= (1.0 - uv.y); // 上部ほど動きを抑制
 
-  // newPosition.x += wave;
-
-  float revUVY = 1.0 - uv.y;
-
-  // //twist
   float twistNoise = texture(
     uNoiseTexture,
-    vec2(0.5, revUVY * -0.2 - uTime * -0.05)
+    vec2(0.5, uv.y * 0.2 - uTime * 0.05)
   ).r;
-  float angle = twistNoise * 1.3;
-  // angle *= (1.0 - uv.y);
   
-  float meshHeight = uMeshHeight; // メッシュの幅（必要に応じて調整）
-  newPosition.y += meshHeight / 2.0; // 左端に移動
-  newPosition.yz = rotate2D(newPosition.yz, angle);
-  newPosition.y -= meshHeight / 2.0; // 元の位置に戻す
+  float wave = sin(uv.y * 1.5 + uTime * 1.5) * 150.0;
+  wave *= (1.0 - uv.y); // 上部ほど動きを抑制
+
+  newPosition.x += wave * 0.3;
+  newPosition.z += wave * 0.7 * twistNoise + 50.0;
+
+  // // //twist
+  // float twistNoise = texture(
+  //   uNoiseTexture,
+  //   vec2(0.5, revUVY * -0.2 - uTime * -0.05)
+  // ).r;
+  // float angle = twistNoise * 1.3;
+  // // angle *= (1.0 - uv.y);
   
-  vec2 windOffset = vec2(
-    texture(uNoiseTexture, vec2(0.25, uTime * -0.05)).r + 0.5,
-    texture(uNoiseTexture, vec2(0.75, uTime * -0.05)).r + 0.5
-  );
-  windOffset *= pow(uv.x, 2.0) * -1.0;
-  newPosition.xz += windOffset;
+  // float meshHeight = uMeshHeight; // メッシュの幅（必要に応じて調整）
+  // newPosition.y += meshHeight / 2.0; // 左端に移動
+  // newPosition.yz = rotate2D(newPosition.yz, angle);
+  // newPosition.y -= meshHeight / 2.0; // 元の位置に戻す
+  
+  // vec2 windOffset = vec2(
+  //   texture(uNoiseTexture, vec2(0.25, uTime * -0.05)).r + 0.5,
+  //   texture(uNoiseTexture, vec2(0.75, uTime * -0.05)).r + 0.5
+  // );
+  // windOffset *= pow(uv.x, 2.0) * -1.0;
+  // newPosition.xz += windOffset;
   
   // vec3 newPosition = position;
   

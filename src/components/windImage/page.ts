@@ -112,8 +112,8 @@ async function createMesh(
 
     const mesh = new THREE.Mesh(geometry, material);
 
-    const { x, y } = _getDomPosition(canvas, imageRect);
-    mesh.position.set(x, y, 0);
+    // const { x, y } = _getDomPosition(canvas, imageRect);
+    // mesh.position.set(x, y, 0);
 
     const o: o = {
       imageRect,
@@ -128,6 +128,7 @@ async function createMesh(
 
     mesh.userData.asset = asset;
     page.scene.add(mesh);
+    mesh.position.z = 50;
 
     return o;
   });
