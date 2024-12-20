@@ -18,10 +18,12 @@ void main() {
   ).r;
   
   float wave = sin(uv.y * 1.5 + uTime * 1.5) * 150.0;
+  wave *= twistNoise;
   wave *= (1.0 - uv.y); // 上部ほど動きを抑制
+  wave -= 1.0;
 
   newPosition.x += wave * 0.3;
-  newPosition.z += wave * 0.7 * twistNoise + 50.0;
+  newPosition.z += wave * 0.7 + 50.0;
 
   // // //twist
   // float twistNoise = texture(

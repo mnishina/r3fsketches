@@ -191,7 +191,8 @@ function _resizeElements(o: o, canvas: HTMLCanvasElement) {
 
   const newImageRect = imageElement.getBoundingClientRect();
   const { x, y } = _getDomPosition(canvas, newImageRect);
-  mesh.position.set(x, y, 0);
+  // mesh.position.x = x;
+  // mesh.position.y = y;
 
   const scaleX = newImageRect.width / imageRect.width;
   const scaleY = newImageRect.height / imageRect.height;
