@@ -83,6 +83,10 @@ export const pagesData = [
     title: "wind image",
     url: "/windImage/",
   },
+  {
+    title: "clone meshes",
+    url: "/cloneMeshes/",
+  },
 ];
 
 interface PageData {
