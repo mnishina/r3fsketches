@@ -1,11 +1,23 @@
 import * as THREE from "three";
 
-const view = {
+import base from "./base";
+import { getViewportInfo } from "./utils";
+
+import type { View } from "./type";
+
+const view: View = {
   init,
   render,
 };
 
-function init() {}
+function init(canvas: HTMLCanvasElement) {
+  const { camera, renderer } = base;
+  if (!camera || !renderer) return;
+
+  window.addEventListener("resize", () => {
+    onResize(canvas, camera, renderer);
+  });
+}
 
 function render(
   renderer: THREE.WebGLRenderer,
@@ -15,6 +27,25 @@ function render(
   renderer.render(scene, camera);
 
   requestAnimationFrame(() => render(renderer, camera, scene));
+}
+
+function onResize(
+  canvas: HTMLCanvasElement,
+  camera: THREE.PerspectiveCamera,
+  renderer: THREE.WebGLRenderer,
+) {
+  let timeoutID: number;
+
+  timeoutID = setTimeout(() => {
+    clearTimeout(timeoutID);
+
+    const { width, height, aspectRatio } = getViewportInfo(canvas);
+
+    renderer.setSize(width, height, false);
+
+    camera.aspect = aspectRatio;
+    camera.updateProjectionMatrix();
+  }, 500);
 }
 
 export default view;
