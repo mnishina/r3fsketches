@@ -1,13 +1,20 @@
+import loader from "./loader";
 import base from "./base";
 import view from "./view";
 
-function init() {
-  const canvas = document.querySelector("canvas") as HTMLCanvasElement;
+async function init() {
+  const $canvas = document.querySelector("canvas") as HTMLCanvasElement;
+  const $image = document.querySelectorAll(
+    "[data-webgl]",
+  ) as NodeListOf<Element>;
 
-  base.init(canvas);
+  await loader.loadImage($image);
 
-  view.init(canvas);
-  
+  base.init($canvas);
+
+  view.init($canvas);
+  view.createMesh();
+
   const { renderer, camera, scene } = base;
   if (!renderer || !camera || !scene) return;
   view.render(renderer, camera, scene);

@@ -1,5 +1,8 @@
 import * as THREE from "three";
 
+import vertexShader from "./shader/vertexShader.glsl";
+import fragmentShader from "./shader/fragmentShader.glsl";
+
 import { getViewportInfo, getCameraFov } from "./utils";
 import type { Base } from "./type";
 
@@ -20,10 +23,12 @@ const base: Base = {
   },
 };
 
-function init(canvas: HTMLCanvasElement) {
-  const { width, height, aspectRatio } = getViewportInfo(canvas);
+function init($canvas: HTMLCanvasElement) {
+  console.log("base init");
 
-  const fov = getCameraFov(canvas, base.cameraInfo.far);
+  const { width, height, aspectRatio } = getViewportInfo($canvas);
+
+  const fov = getCameraFov(height, base.cameraInfo.far);
   base.camera = new THREE.PerspectiveCamera(
     fov,
     aspectRatio,
@@ -33,7 +38,7 @@ function init(canvas: HTMLCanvasElement) {
   base.camera.position.z = base.cameraInfo.far;
 
   base.renderer = new THREE.WebGLRenderer({
-    canvas: canvas,
+    canvas: $canvas,
     antialias: true,
     alpha: true,
   });
@@ -41,11 +46,14 @@ function init(canvas: HTMLCanvasElement) {
   base.renderer.setPixelRatio(base.pixelRatio);
 
   base.geometry = new THREE.PlaneGeometry(500, 500, 32, 32);
-  base.material = new THREE.ShaderMaterial({ wireframe: true });
-
-  base.mesh = new THREE.Mesh(base.geometry, base.material);
-
-  base.scene.add(base.mesh);
+  base.material = new THREE.ShaderMaterial({
+    wireframe: true,
+    vertexShader,
+    fragmentShader,
+    uniforms: {
+      uTime: { value: 0 },
+    },
+  });
 }
 
 export default base;

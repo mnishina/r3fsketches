@@ -7,16 +7,26 @@ import type { View } from "./type";
 
 const view: View = {
   init,
+  createMesh,
   render,
 };
 
-function init(canvas: HTMLCanvasElement) {
+function init($canvas: HTMLCanvasElement) {
   const { camera, renderer } = base;
   if (!camera || !renderer) return;
 
   window.addEventListener("resize", () => {
-    onResize(canvas, camera, renderer);
+    onResize($canvas, camera, renderer);
   });
+}
+
+function createMesh() {
+  if (!base.geometry || !base.material) return;
+
+  const material = base.material.clone();
+  base.mesh = new THREE.Mesh(base.geometry, material);
+
+  base.scene.add(base.mesh);
 }
 
 function render(
@@ -30,7 +40,7 @@ function render(
 }
 
 function onResize(
-  canvas: HTMLCanvasElement,
+  $canvas: HTMLCanvasElement,
   camera: THREE.PerspectiveCamera,
   renderer: THREE.WebGLRenderer,
 ) {
@@ -39,8 +49,8 @@ function onResize(
   timeoutID = setTimeout(() => {
     clearTimeout(timeoutID);
 
-    const { width, height, aspectRatio } = getViewportInfo(canvas);
-    const fov = getCameraFov(canvas, base.cameraInfo.far);
+    const { width, height, aspectRatio } = getViewportInfo($canvas);
+    const fov = getCameraFov(height, base.cameraInfo.far);
 
     renderer.setSize(width, height, false);
 

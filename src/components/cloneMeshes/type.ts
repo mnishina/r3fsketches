@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 interface Base {
-  init: (canvas: HTMLCanvasElement) => void;
+  init: ($canvas: HTMLCanvasElement) => void;
   scene: THREE.Scene;
   renderer: null | THREE.WebGLRenderer;
   camera: null | THREE.PerspectiveCamera;
@@ -18,7 +18,8 @@ interface Base {
 }
 
 interface View {
-  init: (canvas: HTMLCanvasElement) => void;
+  init: ($canvas: HTMLCanvasElement) => void;
+  createMesh: () => void;
   render: (
     renderer: THREE.WebGLRenderer,
     camera: THREE.PerspectiveCamera,
@@ -26,4 +27,10 @@ interface View {
   ) => void;
 }
 
-export type { Base, View };
+interface Loader {
+  loadImage: ($image: NodeListOf<Element>) => Promise<unknown>;
+  loadManager: THREE.LoadingManager;
+  textureLoader: THREE.TextureLoader;
+}
+
+export type { Base, View, Loader };
