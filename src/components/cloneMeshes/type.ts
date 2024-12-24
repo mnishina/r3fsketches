@@ -19,6 +19,7 @@ interface Base {
 
 interface View {
   init: (canvas: HTMLCanvasElement) => void;
+  createMesh: () => void;
   render: (
     renderer: THREE.WebGLRenderer,
     camera: THREE.PerspectiveCamera,

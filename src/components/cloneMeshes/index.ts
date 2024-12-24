@@ -7,7 +7,8 @@ function init() {
   base.init(canvas);
 
   view.init(canvas);
-  
+  view.createMesh();
+
   const { renderer, camera, scene } = base;
   if (!renderer || !camera || !scene) return;
   view.render(renderer, camera, scene);

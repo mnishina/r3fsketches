@@ -7,6 +7,7 @@ import type { View } from "./type";
 
 const view: View = {
   init,
+  createMesh,
   render,
 };
 
@@ -17,6 +18,15 @@ function init(canvas: HTMLCanvasElement) {
   window.addEventListener("resize", () => {
     onResize(canvas, camera, renderer);
   });
+}
+
+function createMesh() {
+  if (!base.geometry || !base.material) return;
+
+  const material = base.material.clone();
+  base.mesh = new THREE.Mesh(base.geometry, material);
+
+  base.scene.add(base.mesh);
 }
 
 function render(
