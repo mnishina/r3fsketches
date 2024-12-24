@@ -27,4 +27,10 @@ interface View {
   ) => void;
 }
 
-export type { Base, View };
+interface Loader {
+  loadImage: (image: NodeListOf<Element>) => Promise<unknown>;
+  loadManager: THREE.LoadingManager;
+  textureLoader: THREE.TextureLoader;
+}
+
+export type { Base, View, Loader };

@@ -24,6 +24,8 @@ const base: Base = {
 };
 
 function init(canvas: HTMLCanvasElement) {
+  console.log("base init");
+
   const { width, height, aspectRatio } = getViewportInfo(canvas);
 
   const fov = getCameraFov(height, base.cameraInfo.far);

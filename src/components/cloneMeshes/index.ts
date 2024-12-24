@@ -1,8 +1,14 @@
+import loader from "./loader";
 import base from "./base";
 import view from "./view";
 
-function init() {
+async function init() {
   const canvas = document.querySelector("canvas") as HTMLCanvasElement;
+  const $image = document.querySelectorAll(
+    "[data-webgl]",
+  ) as NodeListOf<Element>;
+
+  await loader.loadImage($image);
 
   base.init(canvas);
 
