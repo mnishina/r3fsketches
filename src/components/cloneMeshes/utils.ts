@@ -6,9 +6,8 @@ export function getViewportInfo(canvas: HTMLCanvasElement) {
   return { canvasRect, width, height, aspectRatio };
 }
 
-export function getCameraFov(canvas: HTMLCanvasElement, cameraFar: number) {
-  const canvasHeight = canvas.getBoundingClientRect().height;
-  const radian = 2 * Math.atan(canvasHeight / 2 / cameraFar);
+export function getCameraFov(height: number, cameraFar: number) {
+  const radian = 2 * Math.atan(height / 2 / cameraFar);
   const fov = (180 / Math.PI) * radian;
 
   return fov;

@@ -23,7 +23,7 @@ const base: Base = {
 function init(canvas: HTMLCanvasElement) {
   const { width, height, aspectRatio } = getViewportInfo(canvas);
 
-  const fov = getCameraFov(canvas, base.cameraInfo.far);
+  const fov = getCameraFov(height, base.cameraInfo.far);
   base.camera = new THREE.PerspectiveCamera(
     fov,
     aspectRatio,
