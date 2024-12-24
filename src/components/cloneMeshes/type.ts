@@ -9,6 +9,12 @@ interface Base {
   material: null | THREE.ShaderMaterial;
   mesh: null | THREE.Mesh;
   pixelRatio: number;
+  cameraInfo: {
+    fov: null | number;
+    aspectRatio: null | number;
+    near: number;
+    far: number;
+  };
 }
 
 interface View {

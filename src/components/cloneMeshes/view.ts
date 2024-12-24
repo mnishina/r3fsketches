@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 import base from "./base";
-import { getViewportInfo } from "./utils";
+import { getViewportInfo, getCameraFov } from "./utils";
 
 import type { View } from "./type";
 
@@ -40,11 +40,15 @@ function onResize(
     clearTimeout(timeoutID);
 
     const { width, height, aspectRatio } = getViewportInfo(canvas);
+    const fov = getCameraFov(canvas, base.cameraInfo.far);
 
     renderer.setSize(width, height, false);
 
     camera.aspect = aspectRatio;
+    camera.fov = fov;
     camera.updateProjectionMatrix();
+
+    base.cameraInfo.fov = fov;
   }, 500);
 }
 

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-import { getViewportInfo } from "./utils";
+import { getViewportInfo, getCameraFov } from "./utils";
 import type { Base } from "./type";
 
 const base: Base = {
@@ -12,13 +12,25 @@ const base: Base = {
   material: null,
   mesh: null,
   pixelRatio: Math.min(window.devicePixelRatio, 2),
+  cameraInfo: {
+    fov: null,
+    aspectRatio: null,
+    near: 0.1,
+    far: 1000,
+  },
 };
 
 function init(canvas: HTMLCanvasElement) {
   const { width, height, aspectRatio } = getViewportInfo(canvas);
 
-  base.camera = new THREE.PerspectiveCamera(75, aspectRatio, 0.1, 1000);
-  base.camera.position.z = 5;
+  const fov = getCameraFov(canvas, base.cameraInfo.far);
+  base.camera = new THREE.PerspectiveCamera(
+    fov,
+    aspectRatio,
+    base.cameraInfo.near,
+    base.cameraInfo.far,
+  );
+  base.camera.position.z = base.cameraInfo.far;
 
   base.renderer = new THREE.WebGLRenderer({
     canvas: canvas,
@@ -28,7 +40,7 @@ function init(canvas: HTMLCanvasElement) {
   base.renderer.setSize(width, height, false);
   base.renderer.setPixelRatio(base.pixelRatio);
 
-  base.geometry = new THREE.PlaneGeometry(3, 3, 32, 32);
+  base.geometry = new THREE.PlaneGeometry(500, 500, 32, 32);
   base.material = new THREE.ShaderMaterial({ wireframe: true });
 
   base.mesh = new THREE.Mesh(base.geometry, base.material);
