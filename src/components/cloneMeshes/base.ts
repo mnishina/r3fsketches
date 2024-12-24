@@ -23,10 +23,10 @@ const base: Base = {
   },
 };
 
-function init(canvas: HTMLCanvasElement) {
+function init($canvas: HTMLCanvasElement) {
   console.log("base init");
 
-  const { width, height, aspectRatio } = getViewportInfo(canvas);
+  const { width, height, aspectRatio } = getViewportInfo($canvas);
 
   const fov = getCameraFov(height, base.cameraInfo.far);
   base.camera = new THREE.PerspectiveCamera(
@@ -38,7 +38,7 @@ function init(canvas: HTMLCanvasElement) {
   base.camera.position.z = base.cameraInfo.far;
 
   base.renderer = new THREE.WebGLRenderer({
-    canvas: canvas,
+    canvas: $canvas,
     antialias: true,
     alpha: true,
   });
