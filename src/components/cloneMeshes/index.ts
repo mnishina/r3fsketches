@@ -13,7 +13,7 @@ async function init() {
   base.init($canvas);
 
   view.init($canvas);
-  view.createMesh();
+  view.createMesh(loader.loadedTextures);
 
   const { renderer, camera, scene } = base;
   if (!renderer || !camera || !scene) return;

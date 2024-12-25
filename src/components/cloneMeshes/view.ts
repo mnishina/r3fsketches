@@ -20,13 +20,23 @@ function init($canvas: HTMLCanvasElement) {
   });
 }
 
-function createMesh() {
-  if (!base.geometry || !base.material) return;
+function createMesh(loadedTextures: (THREE.Texture | undefined)[]) {
+  loadedTextures.map((texture) => {
+    if (!base.geometry || !base.material || !texture) return;
 
-  const material = base.material.clone();
-  base.mesh = new THREE.Mesh(base.geometry, material);
+    texture.needsUpdate = false;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
 
-  base.scene.add(base.mesh);
+    const { naturalWidth, naturalHeight } = texture.source.data;
+
+    const material = base.material.clone();
+    material.uniforms.uTexture.value = texture;
+
+    const mesh = new THREE.Mesh(base.geometry, material);
+    mesh.scale.set(naturalWidth, naturalHeight, 0);
+    base.scene.add(mesh);
+  });
 }
 
 function render(

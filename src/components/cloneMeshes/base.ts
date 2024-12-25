@@ -45,13 +45,14 @@ function init($canvas: HTMLCanvasElement) {
   base.renderer.setSize(width, height, false);
   base.renderer.setPixelRatio(base.pixelRatio);
 
-  base.geometry = new THREE.PlaneGeometry(500, 500, 32, 32);
+  base.geometry = new THREE.PlaneGeometry(1, 1, 32, 32);
   base.material = new THREE.ShaderMaterial({
-    wireframe: true,
+    // wireframe: true,
     vertexShader,
     fragmentShader,
     uniforms: {
       uTime: { value: 0 },
+      uTexture: { value: null },
     },
   });
 }
