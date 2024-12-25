@@ -6,18 +6,21 @@ const loader: Loader = {
   loadImage,
   loadManager: new THREE.LoadingManager(),
   textureLoader: new THREE.TextureLoader(),
+  loadedTextures: [],
 };
 
 async function loadImage($image: NodeListOf<Element>) {
   return new Promise((resolve, reject) => {
     _manager(resolve, reject);
 
-    $image.forEach((img) => {
+    const texture = [...$image].map((img) => {
       const src = img.getAttribute("src");
       if (!src) return;
 
-      loader.textureLoader.load(src);
+      return loader.textureLoader.load(src);
     });
+
+    loader.loadedTextures.push(...texture);
   });
 }
 
@@ -39,6 +42,8 @@ function _loaded(
 ) {
   manager.onLoad = () => {
     console.log("loaded.");
+    console.log(loader.loadedTextures);
+
     resolve(undefined);
   };
 }

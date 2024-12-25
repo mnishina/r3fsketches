@@ -19,7 +19,7 @@ interface Base {
 
 interface View {
   init: ($canvas: HTMLCanvasElement) => void;
-  createMesh: () => void;
+  createMesh: (loadedTextures: (THREE.Texture | undefined)[]) => void;
   render: (
     renderer: THREE.WebGLRenderer,
     camera: THREE.PerspectiveCamera,
@@ -31,6 +31,7 @@ interface Loader {
   loadImage: ($image: NodeListOf<Element>) => Promise<unknown>;
   loadManager: THREE.LoadingManager;
   textureLoader: THREE.TextureLoader;
+  loadedTextures: (THREE.Texture | undefined)[];
 }
 
 export type { Base, View, Loader };
