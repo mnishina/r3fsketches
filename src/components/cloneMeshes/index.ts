@@ -13,7 +13,7 @@ async function init() {
   base.init($canvas);
 
   view.init($canvas);
-  view.createMesh(loader.loadedMedias);
+  view.createMesh(loader.loadedMedias, $canvas);
 
   const { renderer, camera, scene } = base;
   if (!renderer || !camera || !scene) return;

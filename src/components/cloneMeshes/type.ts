@@ -24,7 +24,10 @@ interface Base {
 
 interface View {
   init: ($canvas: HTMLCanvasElement) => void;
-  createMesh: (loadedMedias: (LoadedMedias | undefined)[]) => void;
+  createMesh: (
+    loadedMedias: (LoadedMedias | undefined)[],
+    $canvas: HTMLCanvasElement,
+  ) => void;
   render: (
     renderer: THREE.WebGLRenderer,
     camera: THREE.PerspectiveCamera,

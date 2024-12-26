@@ -12,3 +12,19 @@ export function getCameraFov(height: number, cameraFar: number) {
 
   return fov;
 }
+
+export function getWorldPosition($canvas: HTMLCanvasElement, $image: Element) {
+  const { width: canvasRectWidth, height: canvasRectHeight } =
+    getViewportInfo($canvas);
+  const {
+    x: $imageX,
+    y: $imageY,
+    width: $imageWidth,
+    height: $imageHeight,
+  } = $image.getBoundingClientRect();
+
+  const convertX = $imageX - canvasRectWidth / 2 + $imageWidth / 2;
+  const convertY = -($imageY - canvasRectHeight / 2 + $imageHeight / 2);
+
+  return { convertX, convertY };
+}

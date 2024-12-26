@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 import base from "./base";
-import { getViewportInfo, getCameraFov } from "./utils";
+import { getViewportInfo, getCameraFov, getWorldPosition } from "./utils";
 
 import type { View, LoadedMedias } from "./type";
 
@@ -20,12 +20,16 @@ function init($canvas: HTMLCanvasElement) {
   });
 }
 
-function createMesh(loadedMedias: (LoadedMedias | undefined)[]) {
+function createMesh(
+  loadedMedias: (LoadedMedias | undefined)[],
+  $canvas: HTMLCanvasElement,
+) {
   loadedMedias.map((media) => {
     if (!base.geometry || !base.material || !media) return;
 
     const { $image, texture } = media;
-    const { x, y, width, height } = $image.getBoundingClientRect();
+    const { width, height } = $image.getBoundingClientRect();
+    const { convertX: x, convertY: y } = getWorldPosition($canvas, $image);
 
     texture.needsUpdate = false;
     texture.minFilter = THREE.LinearFilter;
@@ -36,6 +40,8 @@ function createMesh(loadedMedias: (LoadedMedias | undefined)[]) {
 
     const mesh = new THREE.Mesh(base.geometry, material);
     mesh.scale.set(width, height, 0);
+    mesh.position.x = x;
+    mesh.position.y = y;
     base.scene.add(mesh);
   });
 }
