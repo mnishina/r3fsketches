@@ -3,7 +3,7 @@ import * as THREE from "three";
 import base from "./base";
 import { getViewportInfo, getCameraFov } from "./utils";
 
-import type { View } from "./type";
+import type { View, LoadedMedias } from "./type";
 
 const view: View = {
   init,
@@ -20,21 +20,22 @@ function init($canvas: HTMLCanvasElement) {
   });
 }
 
-function createMesh(loadedTextures: (THREE.Texture | undefined)[]) {
-  loadedTextures.map((texture) => {
-    if (!base.geometry || !base.material || !texture) return;
+function createMesh(loadedMedias: (LoadedMedias | undefined)[]) {
+  loadedMedias.map((media) => {
+    if (!base.geometry || !base.material || !media) return;
+
+    const { $image, texture } = media;
+    const { x, y, width, height } = $image.getBoundingClientRect();
 
     texture.needsUpdate = false;
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
 
-    const { naturalWidth, naturalHeight } = texture.source.data;
-
     const material = base.material.clone();
     material.uniforms.uTexture.value = texture;
 
     const mesh = new THREE.Mesh(base.geometry, material);
-    mesh.scale.set(naturalWidth, naturalHeight, 0);
+    mesh.scale.set(width, height, 0);
     base.scene.add(mesh);
   });
 }

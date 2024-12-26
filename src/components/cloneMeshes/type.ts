@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
-interface LoadedAssets {
-  $img: Element;
+interface LoadedMedias {
+  $image: Element;
   texture: THREE.Texture;
 }
 
@@ -24,7 +24,7 @@ interface Base {
 
 interface View {
   init: ($canvas: HTMLCanvasElement) => void;
-  createMesh: (loadedTextures: (THREE.Texture | undefined)[]) => void;
+  createMesh: (loadedMedias: (LoadedMedias | undefined)[]) => void;
   render: (
     renderer: THREE.WebGLRenderer,
     camera: THREE.PerspectiveCamera,
@@ -33,10 +33,10 @@ interface View {
 }
 
 interface Loader {
-  loadImage: ($image: NodeListOf<Element>) => Promise<unknown>;
+  loadImage: ($images: NodeListOf<Element>) => Promise<unknown>;
   loadManager: THREE.LoadingManager;
   textureLoader: THREE.TextureLoader;
-  loadedAssets: (LoadedAssets | undefined)[];
+  loadedMedias: (LoadedMedias | undefined)[];
 }
 
-export type { Base, View, Loader };
+export type { Base, View, Loader, LoadedMedias };
