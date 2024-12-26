@@ -6,7 +6,7 @@ const loader: Loader = {
   loadImage,
   loadManager: new THREE.LoadingManager(),
   textureLoader: new THREE.TextureLoader(),
-  loadedTextures: [],
+  loadedAssets: [],
 };
 
 async function loadImage($image: NodeListOf<Element>) {
@@ -17,10 +17,13 @@ async function loadImage($image: NodeListOf<Element>) {
       const src = img.getAttribute("src");
       if (!src) return;
 
-      return loader.textureLoader.load(src);
+      return {
+        $img: img,
+        texture: loader.textureLoader.load(src),
+      };
     });
 
-    loader.loadedTextures.push(...texture);
+    loader.loadedAssets.push(...texture);
   });
 }
 
@@ -42,7 +45,7 @@ function _loaded(
 ) {
   manager.onLoad = () => {
     console.log("loaded.");
-    console.log(loader.loadedTextures);
+    console.log(loader.loadedAssets);
 
     resolve(undefined);
   };

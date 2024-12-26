@@ -1,5 +1,10 @@
 import * as THREE from "three";
 
+interface LoadedAssets {
+  $img: Element;
+  texture: THREE.Texture;
+}
+
 interface Base {
   init: ($canvas: HTMLCanvasElement) => void;
   scene: THREE.Scene;
@@ -31,7 +36,7 @@ interface Loader {
   loadImage: ($image: NodeListOf<Element>) => Promise<unknown>;
   loadManager: THREE.LoadingManager;
   textureLoader: THREE.TextureLoader;
-  loadedTextures: (THREE.Texture | undefined)[];
+  loadedAssets: (LoadedAssets | undefined)[];
 }
 
 export type { Base, View, Loader };
