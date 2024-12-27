@@ -1,3 +1,5 @@
+import type { ObjectStore } from "./type";
+
 export function getViewportInfo($canvas: HTMLCanvasElement) {
   const canvasRect = $canvas.getBoundingClientRect();
   const { width, height } = canvasRect;
@@ -11,4 +13,20 @@ export function getCameraFov(height: number, cameraFar: number) {
   const fov = (180 / Math.PI) * radian;
 
   return fov;
+}
+
+export function getWorldPosition($canvas: HTMLCanvasElement, $image: Element) {
+  const { width: canvasRectWidth, height: canvasRectHeight } =
+    getViewportInfo($canvas);
+  const {
+    x: $imageX,
+    y: $imageY,
+    width: $imageWidth,
+    height: $imageHeight,
+  } = $image.getBoundingClientRect();
+
+  const convertX = $imageX - canvasRectWidth / 2 + $imageWidth / 2;
+  const convertY = -($imageY - canvasRectHeight / 2 + $imageHeight / 2);
+
+  return { convertX, convertY };
 }
