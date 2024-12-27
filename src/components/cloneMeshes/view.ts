@@ -3,12 +3,13 @@ import * as THREE from "three";
 import base from "./base";
 import { getViewportInfo, getCameraFov, getWorldPosition } from "./utils";
 
-import type { View, LoadedMedias } from "./type";
+import type { View, LoadedMedias, ObjectStore } from "./type";
 
 const view: View = {
   init,
   createMesh,
   render,
+  objectStore: [],
 };
 
 function init($canvas: HTMLCanvasElement) {
@@ -16,20 +17,16 @@ function init($canvas: HTMLCanvasElement) {
   if (!camera || !renderer) return;
 
   window.addEventListener("resize", () => {
-    onResize($canvas, camera, renderer);
+    _onResize($canvas, camera, renderer);
   });
 }
 
-function createMesh(
-  loadedMedias: (LoadedMedias | undefined)[],
-  $canvas: HTMLCanvasElement,
-) {
-  loadedMedias.map((media) => {
+function createMesh(loadedMedias: (LoadedMedias | undefined)[]) {
+  view.objectStore = loadedMedias.map((media) => {
     if (!base.geometry || !base.material || !media) return;
 
     const { $image, texture } = media;
-    const { width, height } = $image.getBoundingClientRect();
-    const { convertX: x, convertY: y } = getWorldPosition($canvas, $image);
+    const { width, height, x, y } = $image.getBoundingClientRect();
 
     texture.needsUpdate = false;
     texture.minFilter = THREE.LinearFilter;
@@ -40,23 +37,36 @@ function createMesh(
 
     const mesh = new THREE.Mesh(base.geometry, material);
     mesh.scale.set(width, height, 0);
-    mesh.position.x = x;
-    mesh.position.y = y;
     base.scene.add(mesh);
+
+    return {
+      $image,
+      $imageX: x,
+      $imageY: y,
+      $imageWidth: width,
+      $imageHeight: height,
+      material,
+      mesh,
+    };
   });
+
+  console.log(view.objectStore);
 }
 
 function render(
+  $canvas: HTMLCanvasElement,
   renderer: THREE.WebGLRenderer,
   camera: THREE.PerspectiveCamera,
   scene: THREE.Scene,
 ) {
   renderer.render(scene, camera);
 
-  requestAnimationFrame(() => render(renderer, camera, scene));
+  _setMeshPosition($canvas, view.objectStore);
+
+  requestAnimationFrame(() => render($canvas, renderer, camera, scene));
 }
 
-function onResize(
+function _onResize(
   $canvas: HTMLCanvasElement,
   camera: THREE.PerspectiveCamera,
   renderer: THREE.WebGLRenderer,
@@ -77,6 +87,24 @@ function onResize(
 
     base.cameraInfo.fov = fov;
   }, 500);
+}
+
+function _setMeshPosition(
+  $canvas: HTMLCanvasElement,
+  objectStore: (ObjectStore | undefined)[],
+) {
+  const { width: canvasRectWidth, height: canvasRectHeight } =
+    getViewportInfo($canvas);
+
+  objectStore.forEach((o) => {
+    if (!o) return;
+
+    const { mesh, $imageX, $imageY, $imageWidth, $imageHeight } = o;
+
+    mesh.position.x = $imageX - canvasRectWidth / 2 + $imageWidth / 2;
+    mesh.position.y =
+      -($imageY - canvasRectHeight / 2 + $imageHeight / 2) + window.scrollY;
+  });
 }
 
 export default view;

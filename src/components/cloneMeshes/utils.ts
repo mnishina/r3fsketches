@@ -1,3 +1,5 @@
+import type { ObjectStore } from "./type";
+
 export function getViewportInfo($canvas: HTMLCanvasElement) {
   const canvasRect = $canvas.getBoundingClientRect();
   const { width, height } = canvasRect;

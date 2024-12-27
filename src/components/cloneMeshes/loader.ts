@@ -45,7 +45,7 @@ function _loaded(
 ) {
   manager.onLoad = () => {
     console.log("loaded.");
-    console.log(loader.loadedMedias);
+    // console.log(loader.loadedMedias);
 
     resolve(undefined);
   };

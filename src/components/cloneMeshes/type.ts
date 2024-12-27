@@ -5,6 +5,16 @@ interface LoadedMedias {
   texture: THREE.Texture;
 }
 
+interface ObjectStore {
+  $image: Element;
+  $imageWidth: number;
+  $imageHeight: number;
+  $imageX: number;
+  $imageY: number;
+  material: THREE.ShaderMaterial;
+  mesh: THREE.Mesh;
+}
+
 interface Base {
   init: ($canvas: HTMLCanvasElement) => void;
   scene: THREE.Scene;
@@ -24,15 +34,14 @@ interface Base {
 
 interface View {
   init: ($canvas: HTMLCanvasElement) => void;
-  createMesh: (
-    loadedMedias: (LoadedMedias | undefined)[],
-    $canvas: HTMLCanvasElement,
-  ) => void;
+  createMesh: (loadedMedias: (LoadedMedias | undefined)[]) => void;
   render: (
+    $canvas: HTMLCanvasElement,
     renderer: THREE.WebGLRenderer,
     camera: THREE.PerspectiveCamera,
     scene: THREE.Scene,
   ) => void;
+  objectStore: (ObjectStore | undefined)[];
 }
 
 interface Loader {
@@ -42,4 +51,4 @@ interface Loader {
   loadedMedias: (LoadedMedias | undefined)[];
 }
 
-export type { Base, View, Loader, LoadedMedias };
+export type { Base, View, Loader, LoadedMedias, ObjectStore };
